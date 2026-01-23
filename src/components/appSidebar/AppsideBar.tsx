@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
 
 // Mock shadcn/ui components with TypeScript
 interface ButtonProps {
@@ -64,18 +63,18 @@ interface ZenaSidebarProps {
 const ZenaSidebar = ({ isCollapsed, onToggle }: ZenaSidebarProps) => {
   const router = useRouter();
   const pathname = usePathname();
-  const [role] = useState<'superadmin' | 'admin'>('superadmin');
+  const role = localStorage.getItem('role');
 
   const sidebarItems: SidebarItem[] = [
-    { name: "Dashboard", path: "/", icon: LayoutDashboard, allowedRoles: ['superadmin', 'admin'] },
+    { name: "Dashboard", path: "/", icon: LayoutDashboard, allowedRoles: ['superadmin'] },
     { name: "Customers", path: "/customers", icon: Users, allowedRoles: ['superadmin'] },
     { name: "Visits", path: "/visits", icon: FileText, allowedRoles: ['superadmin'] },
     { name: "Rewards Management", path: "/rewards-management", icon: Gift, allowedRoles: ['superadmin'] },
     { name: "Redemption Requests", path: "/redemption-requests", icon: CreditCard, allowedRoles: ['superadmin'] },
-    { name: "Settings", path: "/settings", icon: Settings, allowedRoles: ['superadmin'] },
+    { name: "Settings", path: "/settings/super-admin", icon: Settings, allowedRoles: ['superadmin'] },
     { name: "Overview", path: "/overview", icon: Grid3x3, allowedRoles: ['admin'] },
     { name: "Salons Management", path: "/salons-management", icon: Scissors, allowedRoles: ['admin'] },
-    { name: "Setting", path: "/setting", icon: Settings, allowedRoles: ['admin'] },
+    { name: "Settings", path: "/settings/admin", icon: Settings, allowedRoles: ['admin'] },
   ];
 
   const filteredSidebars = sidebarItems.filter(item => item.allowedRoles.includes(role));

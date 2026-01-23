@@ -1,14 +1,23 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Check } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function ConfirmCustomerVisit() {
+
+  const visits = Array(2).fill({
+    name: 'Michael Chen',
+    confirmedTime: '12 mins ago',
+    points: '+35 PTS'
+  });
+
   return (
     <div className=" space-y-6">
       {/* Header */}
@@ -28,10 +37,13 @@ export default function ConfirmCustomerVisit() {
       {/* Customer Profile Card */}
       <Card className="p-4 bg-white border border-gray-200">
         <div className="flex items-center gap-4">
-          <Avatar className="w-16 h-16">
-            <AvatarImage src="/placeholder-avatar.jpg" alt="Alex Johnson" />
-            <AvatarFallback>AJ</AvatarFallback>
-          </Avatar>
+          <Image
+            src={'/images/image1.jpg'}
+            height={1000}
+            width={1000}
+            alt=''
+            className='w-24 h-24 rounded-full'
+          />
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-medium">Alex Johnson</h2>
@@ -124,13 +136,48 @@ export default function ConfirmCustomerVisit() {
               <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500">PTS</span>
             </div>
           </div>
-          <div className="mt-6">
-            <Button className="w-full bg-green-500 hover:bg-green-600 text-white">
+          <div className="mt-6 flex justify-end">
+            <div></div>
+            <Button className="w-2/12 bg-green-500 hover:bg-green-600 text-white">
               Confirm Visit & Award Points
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      <section>
+        <div className='flex items-center justify-between pb-3'>
+          <h1>Recent Confirmed visits</h1>
+          <Link className='text-sm hover:underline text-yellow-500' href="/visits/confrim-visits">View All</Link>
+        </div>
+
+        <div className="space-y-4 mb-6">
+          {visits.map((visit, index) => (
+            <div
+              key={index}
+              className="bg-[#c8d4c8] border border-gray-400 rounded-lg p-4 flex items-center gap-4"
+            >
+              {/* Checkmark Icon */}
+              <div className="bg-[#a8bda8] rounded-full w-12 h-12 flex items-center justify-center shrink-0">
+                <Check className="w-6 h-6 text-gray-700" strokeWidth={2.5} />
+              </div>
+
+              {/* Content */}
+              <div className="flex-1">
+                <h3 className="text-base font-medium text-gray-800 mb-1">
+                  {visit.name}
+                </h3>
+                <p className="text-sm text-gray-600 mb-0.5">
+                  Confirmed {visit.confirmedTime}
+                </p>
+                <p className="text-sm text-[#c67b7b] font-medium">
+                  {visit.points}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
