@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { FilePenLine, ImageIcon, Plus, X } from 'lucide-react';
+import Image from 'next/image';
 import { ChangeEvent, useRef, useState } from 'react';
 
 interface Reward {
@@ -40,7 +41,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'active',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     },
     {
       id: 2,
@@ -48,7 +49,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'active',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     },
     {
       id: 3,
@@ -56,7 +57,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'inactive',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     },
     {
       id: 4,
@@ -64,7 +65,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'active',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     },
     {
       id: 5,
@@ -72,7 +73,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'disable',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     },
     {
       id: 6,
@@ -80,7 +81,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'active',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     },
     {
       id: 7,
@@ -88,7 +89,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'inactive',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     },
     {
       id: 8,
@@ -96,7 +97,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'active',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     },
     {
       id: 9,
@@ -104,7 +105,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'disable',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     },
     {
       id: 10,
@@ -112,7 +113,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'disable',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     },
     {
       id: 11,
@@ -120,7 +121,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'active',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     },
     {
       id: 12,
@@ -128,7 +129,7 @@ export default function LoyaltyRewards() {
       points: 500,
       description: 'Valid for any stylist tier',
       status: 'active',
-      image: '/api/placeholder/400/300'
+      image: '/images/image2.jpg'
     }
   ]);
 
@@ -284,7 +285,7 @@ export default function LoyaltyRewards() {
         <div className="flex items-center justify-between mb-2">
           <div>
             <h1 className="text-2xl font-normal text-gray-800 mb-1">Loyalty Rewards</h1>
-            <p className="text-sm text-gray-700">Configure and monitor your salon's reward catalog.</p>
+            <p className="text-sm text-gray-700">Configure and monitor your salon&apos;s reward catalog.</p>
           </div>
           <Button
             onClick={() => {
@@ -324,8 +325,10 @@ export default function LoyaltyRewards() {
             <div key={reward.id} className="bg-white rounded-lg overflow-hidden border border-gray-300">
               {/* Image */}
               <div className="relative h-40 bg-gray-300">
-                <img
+                <Image
                   src={getImageUrl(reward.image)}
+                  width={1000}
+                  height={1000}
                   alt={reward.name}
                   className="w-full h-full object-cover"
                 />
@@ -393,9 +396,11 @@ export default function LoyaltyRewards() {
               >
                 {imagePreview ? (
                   <>
-                    <img
+                    <Image
                       src={imagePreview}
                       alt="Preview"
+                      width={1000}
+                      height={1000}
                       className="w-full h-full object-cover rounded-lg"
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
@@ -485,7 +490,7 @@ export default function LoyaltyRewards() {
                 />
               </div>
               <div>
-                <label className="text-sm text-gray-800 mb-2 block">What's Included</label>
+                <label className="text-sm text-gray-800 mb-2 block">What&apos;s Included</label>
                 <Textarea
                   placeholder="Enter the included features"
                   value={formData.included}

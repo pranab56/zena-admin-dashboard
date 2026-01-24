@@ -1,66 +1,68 @@
 "use client"
 
-import { Badge, Bell, ChevronDown } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Bell } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const userName = "Jane Cooper";
+  const userName = "John Doe";
   const userRole = "Admin";
-  const unreadCount = 1;
+  const unreadCount = 3;
+  const router = useRouter();
+
+  // Get initials from name
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase();
+  };
 
   return (
-    <header className="w-full border-b bg-white">
-      <div className="flex h-20 items-center justify-between px-4 md:px-8">
-        <div>
-          <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
-            Welcome Back!
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-3 md:gap-4">
-          {/* Notification */}
+    <header className="w-full border-b border-gray-200 bg-white">
+      <div className="flex h-20 items-center justify-end px-8">
+        {/* Right side - Notification and Profile */}
+        <div className="flex items-center gap-6">
+          {/* Notification Bell */}
           <div className="relative">
-            <button className="relative flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors">
-              <Bell className="h-5 w-5 md:h-6 md:w-6 text-gray-700" />
+            <button onClick={() => router.push("/notifications")} className="relative flex items-center cursor-pointer justify-center transition-colors">
+              <Bell className="h-6 w-6 text-gray-700 fill-gray-700" />
               {unreadCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 min-w-5 rounded-full px-1.5 text-xs font-semibold bg-red-500 text-white">
+                <span className="absolute -top-2.5 -right-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white">
                   {unreadCount}
-                </Badge>
+                </span>
               )}
             </button>
           </div>
 
-          {/* Profile */}
+          {/* Profile Section */}
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 md:gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2 md:px-4 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 transition-colors"
             >
-              <Avatar className="h-8 w-8 md:h-10 md:w-10">
-                <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jane" alt={userName} />
-                <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold text-sm">
-                  JC
-                </AvatarFallback>
-              </Avatar>
-              <div className="hidden md:flex flex-col items-start">
-                <span className="text-sm font-semibold text-gray-900">{userName}</span>
+              {/* User Info */}
+              <div className="flex flex-col items-end">
+                <span className="text-sm font-medium text-gray-900">{userName}</span>
                 <span className="text-xs text-gray-500">{userRole}</span>
               </div>
-              <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+
+              {/* Avatar */}
+              <Avatar className="h-12 w-12 border-2 border-gray-300">
+                <AvatarImage src="" alt={userName} />
+                <AvatarFallback className="bg-white text-gray-700 font-medium text-base">
+                  {getInitials(userName)}
+                </AvatarFallback>
+              </Avatar>
+
+              {/* Dropdown Arrow */}
+
             </button>
 
-            {isDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 rounded-md border border-gray-200 bg-white py-1 shadow-lg z-50">
-                <button className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100">
-                  My Profile
-                </button>
-                <button className="w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-gray-100">
-                  Logout
-                </button>
-              </div>
-            )}
+
           </div>
         </div>
       </div>

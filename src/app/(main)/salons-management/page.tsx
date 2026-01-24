@@ -40,12 +40,10 @@ import {
 } from '@/components/ui/table';
 import {
   AlertTriangle,
-  Building,
   CheckCircle,
   Eye,
   Filter,
-  Search,
-  Users
+  Search
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ChangeEvent, useState } from 'react';
@@ -207,10 +205,9 @@ const SalonManagement = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-6 mb-6">
-          <Card >
+          <Card className=''>
             <CardContent className="p-5">
               <div className="text-muted-foreground text-xs uppercase tracking-wider mb-1 flex items-center gap-2">
-                <Building className="w-4 h-4" />
                 Active Salons
               </div>
               <div className="text-2xl font-semibold">{activeSalons}</div>
@@ -219,7 +216,6 @@ const SalonManagement = () => {
           <Card>
             <CardContent className="p-5">
               <div className="text-muted-foreground text-xs uppercase tracking-wider mb-1 flex items-center gap-2">
-                <Users className="w-4 h-4" />
                 Total Ecosystem Customers
               </div>
               <div className="text-2xl font-semibold">12,400</div>
@@ -265,9 +261,9 @@ const SalonManagement = () => {
         </div>
 
         {/* Table */}
-        <Card className='p-0'>
-          <Table>
-            <TableHeader className='p-3'>
+        <div className='border rounded-lg '>
+          <Table className='border border-[#EEF8ED] rounded-lg'>
+            <TableHeader className='p-3 h-14 bg-[#EEF8ED] hover:bg-[#EEF8ED]'>
               <TableRow className='p-2'>
                 <TableHead>Business Name</TableHead>
                 <TableHead>Status</TableHead>
@@ -324,7 +320,7 @@ const SalonManagement = () => {
               )}
             </TableBody>
           </Table>
-        </Card>
+        </div>
 
         {/* Footer Pagination */}
         <div className="mt-6 flex justify-end gap-3">

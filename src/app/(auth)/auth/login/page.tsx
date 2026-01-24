@@ -70,14 +70,12 @@ export default function AdminLoginPage() {
     if (!newErrors.email && !newErrors.password && !newErrors.role) {
       try {
         setIsLoading(true);
-        console.log("Login credentials:", formData);
-
-        // Use the auth context login
-
-
-        // Redirect based on role
-        router.push('/');
-
+        localStorage.setItem('role', formData.role);
+        if(formData.role === 'superadmin'){
+          router.push('/overview');
+        } else if(formData.role === 'salonadmin'){
+          router.push('/');
+        }
       } catch (error) {
         console.log('Login error:', error);
         alert('Login failed! Please check your credentials.');
@@ -150,10 +148,10 @@ export default function AdminLoginPage() {
                   className={`mt-2 cursor-pointer h-12 py-6 w-full ${errors.role ? 'border-red-500' : 'border-gray-300'
                     } focus:ring-0 focus:ring-green-400`}
                 >
-                  <SelectValue placeholder="leonardo.leo@gmail.com" />
+                  <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent className=''>
-                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="salonadmin">Salon Admin</SelectItem>
                   <SelectItem value="superadmin">Super Admin</SelectItem>
                 </SelectContent>
               </Select>

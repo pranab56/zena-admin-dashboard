@@ -12,9 +12,6 @@ interface ApiError {
   };
 }
 
-interface ResetPasswordResponse {
-  message?: string;
-}
 
 interface ResetPasswordData {
   newPassword: string;

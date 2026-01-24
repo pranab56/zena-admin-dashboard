@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell, Gift } from 'lucide-react';
 
-interface Notification {
+export interface Notification {
   id: number;
   type: 'redemption' | 'visit';
   message: string;

@@ -25,7 +25,7 @@ export default function ConfirmedVisits() {
           {visits.map((visit, index) => (
             <div
               key={index}
-              className="bg-[#c8d4c8] border border-gray-400 rounded-lg p-4 flex items-center gap-4"
+              className="border border-primary rounded-lg p-4 flex items-center gap-4"
             >
               {/* Checkmark Icon */}
               <div className="bg-[#a8bda8] rounded-full w-12 h-12 flex items-center justify-center shrink-0">

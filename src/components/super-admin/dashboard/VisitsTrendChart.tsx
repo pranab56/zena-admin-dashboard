@@ -11,7 +11,17 @@ interface VisitsTrendChartProps {
   highlightedMonth: string;
 }
 
-const CustomTooltip = ({ active, payload }: any) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+    dataKey: string;
+    payload: VisitsData;
+  }>;
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-gray-900 text-white px-3 py-2 rounded-lg text-sm">
@@ -21,6 +31,18 @@ const CustomTooltip = ({ active, payload }: any) => {
   }
   return null;
 };
+
+// Alternative: Using Recharts' built-in TooltipProps type
+// const CustomTooltip = ({ active, payload }: TooltipProps<ValueType, NameType>) => {
+//   if (active && payload && payload.length) {
+//     return (
+//       <div className="bg-gray-900 text-white px-3 py-2 rounded-lg text-sm">
+//         Total Visits {(Number(payload[0].value) / 1000).toFixed(1)}k
+//       </div>
+//     );
+//   }
+//   return null;
+// };
 
 const VisitsTrendChart = ({ visitsData, highlightedMonth }: VisitsTrendChartProps) => {
   return (

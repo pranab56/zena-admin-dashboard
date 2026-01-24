@@ -15,13 +15,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChevronLeft, ChevronRight, MoreHorizontal, Search, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LucideIcon, MoreHorizontal, Search, Users } from 'lucide-react';
 import { useState } from 'react';
 import StatsCards from '../../../components/super-admin/dashboard/StatsCards';
 
+interface RedemptionItem {
+  id: number;
+  phone: string;
+  reward: string;
+  points: number;
+  status: 'Approve' | 'Pending';
+}
+
+interface StatCard {
+  id: number;
+  title: string;
+  value: number;
+  icon: LucideIcon;
+}
+
 const RedemptionQueue = () => {
-  const [selectedRow, setSelectedRow] = useState(null);
-  const [redemptions, setRedemptions] = useState([
+  const [selectedRow, setSelectedRow] = useState<number | null>(null);
+  const [redemptions, setRedemptions] = useState<RedemptionItem[]>([
     {
       id: 1,
       phone: '+9876463212',
@@ -59,8 +74,7 @@ const RedemptionQueue = () => {
     }
   ]);
 
-
-  const data = [
+  const stats: StatCard[] = [
     {
       id: 1,
       title: 'Total Pending',
@@ -81,15 +95,14 @@ const RedemptionQueue = () => {
     },
   ];
 
-
-  const handleApprove = (id: any) => {
+  const handleApprove = (id: number) => {
     setRedemptions(redemptions.map(item =>
       item.id === id ? { ...item, status: 'Approve' } : item
     ));
     setSelectedRow(null);
   };
 
-  const handleDecline = (id: any) => {
+  const handleDecline = (id: number) => {
     setRedemptions(redemptions.filter(item => item.id !== id));
     setSelectedRow(null);
   };
@@ -97,7 +110,7 @@ const RedemptionQueue = () => {
   return (
     <div className="">
       <div className="">
-        <StatsCards stats={data} />
+        <StatsCards stats={stats} />
         {/* Header */}
         <div className="mb-6 mt-5">
           <h1 className="text-2xl font-semibold text-gray-800 mb-2">
@@ -225,7 +238,7 @@ const RedemptionQueue = () => {
             </Button>
             <Button
               size="sm"
-              className="bg-green-600 hover:bg-green-700 text-white min-w-10"
+              className="bg-primary hover:bg-primary text-black min-w-10"
             >
               1
             </Button>

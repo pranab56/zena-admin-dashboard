@@ -2,11 +2,10 @@
 
 import { Gift, TrendingUp, Users } from 'lucide-react';
 import { useState } from 'react';
-import NotificationsList from '../../components/super-admin/dashboard/NotificationsList';
+import NotificationsList, { type Notification } from '../../components/super-admin/dashboard/NotificationsList';
 import PointsPieChart from '../../components/super-admin/dashboard/PointsPieChart';
 import StatsCards from '../../components/super-admin/dashboard/StatsCards';
 import VisitsTrendChart from '../../components/super-admin/dashboard/VisitsTrendChart';
-
 
 const LoyaltyDashboard = () => {
   // Demo data
@@ -25,6 +24,12 @@ const LoyaltyDashboard = () => {
     },
     {
       id: 3,
+      title: 'Points Issued Today',
+      value: 1200,
+      icon: TrendingUp
+    },
+    {
+      id: 4,
       title: 'Points Issued',
       value: 1200,
       icon: TrendingUp
@@ -51,7 +56,7 @@ const LoyaltyDashboard = () => {
     { name: 'Redeemed', value: 1000, fill: '#D1D5DB' }
   ]);
 
-  const [notifications] = useState([
+  const [notifications] = useState<Notification[]>([
     {
       id: 1,
       type: 'redemption',
@@ -79,7 +84,9 @@ const LoyaltyDashboard = () => {
     <div className="">
       <div className="space-y-6">
         {/* Stats Cards */}
+
         <StatsCards stats={data} />
+
 
         {/* Visits Trend Chart */}
         <VisitsTrendChart

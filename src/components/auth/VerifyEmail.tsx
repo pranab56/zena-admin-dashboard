@@ -11,16 +11,7 @@ interface ApiError {
   };
 }
 
-interface OTPCheckResponse {
-  message?: string;
-  data?: {
-    forgetOtpMatchToken: string;
-  };
-}
 
-interface ResetPasswordResponse {
-  message?: string;
-}
 
 export default function VerifyEmailPage() {
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
@@ -177,12 +168,12 @@ export default function VerifyEmailPage() {
             <h1 className="text-3xl font-semibold text-green-400 mb-2">Account Recovery</h1>
             <h2 className="text-xl font-medium text-gray-700 mb-3">Verify Your Identity</h2>
             <p className="text-sm text-gray-600 mb-4">
-              To help keep your account safe, we need to make sure<br />it's really you trying to sign in
+              To help keep your account safe, we need to make sure<br />it&apos;s really you trying to sign in
             </p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
               <p className="text-xs text-gray-700 mb-1 font-semibold">Get a Verification Code</p>
               <p className="text-xs text-gray-600">
-                We've sent a 6-digit code to{' '}
+                We&apos;ve sent a 6-digit code to{' '}
                 <span className="font-semibold text-gray-800">*********@example.com</span>
               </p>
             </div>
@@ -229,7 +220,7 @@ export default function VerifyEmailPage() {
 
             {/* Resend Link */}
             <div className="text-center text-sm text-gray-600 flex items-center justify-center gap-2">
-              <span>Didn't receive the code?</span>
+              <span>Didn&apos;t receive the code?</span>
               <button
                 type="button"
                 onClick={handleResend}

@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Clock, Edit2, Image as ImageIcon, MapPin, X } from 'lucide-react';
+import Image from 'next/image';
 import { ChangeEvent, useState } from 'react';
 
 interface OperatingHours {
@@ -130,15 +131,15 @@ const SalonProfileSetup = () => {
             <h1 className="text-xl font-semibold text-gray-800">Salon Profile Setup</h1>
           </div>
           <p className="text-sm text-gray-600">
-            Manage your salon's basic information and branding details.
+            Manage your salon`&apos;s basic information and branding details.
           </p>
         </div>
 
         {/* Image Upload Section */}
-        <div className="relative mb-6 h-52 rounded-lg overflow-hidden bg-gray-400">
+        <div className="relative mb-6 h-52 rounded-lg overflow-hidden bg-white">
           {salonImage ? (
             <div className="relative w-full h-full">
-              <img src={salonImage} alt="Salon" className="w-full h-full object-cover" />
+              <Image src={salonImage} width={1000} height={1000} alt="Salon" className="w-full h-full object-cover" />
               <button
                 onClick={clearImage}
                 className="absolute top-2 right-2 bg-red-500 cursor-pointer hover:bg-red-600 text-white p-1 rounded-full"
@@ -246,7 +247,7 @@ const SalonProfileSetup = () => {
 
         {/* Operating Hours Modal */}
         <Dialog open={showHoursModal} onOpenChange={setShowHoursModal}>
-          <DialogContent className="max-w-xl bg-gray-300 p-0 border-none">
+          <DialogContent className="max-w-xl bg-white p-0 border-none">
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
                 <div>

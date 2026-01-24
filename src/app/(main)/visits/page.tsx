@@ -138,7 +138,7 @@ export default function ConfirmCustomerVisit() {
           </div>
           <div className="mt-6 flex justify-end">
             <div></div>
-            <Button className="w-2/12 bg-green-500 hover:bg-green-600 text-white">
+            <Button className="w-2/12 bg-primary hover:bg-primary text-gray-700">
               Confirm Visit & Award Points
             </Button>
           </div>
@@ -155,7 +155,7 @@ export default function ConfirmCustomerVisit() {
           {visits.map((visit, index) => (
             <div
               key={index}
-              className="bg-[#c8d4c8] border border-gray-400 rounded-lg p-4 flex items-center gap-4"
+              className=" border border-primary rounded-lg p-4 flex items-center gap-4"
             >
               {/* Checkmark Icon */}
               <div className="bg-[#a8bda8] rounded-full w-12 h-12 flex items-center justify-center shrink-0">

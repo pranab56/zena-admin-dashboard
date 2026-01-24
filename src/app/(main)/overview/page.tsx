@@ -43,16 +43,20 @@ const Dashboard = () => {
     <div className="">
       <div className="space-y-6">
         {/* Top Stats */}
-        <div className="grid grid-cols-3 gap-6">
-          <Card className="bg-white p-6 rounded-lg shadow-sm">
+        <div className="grid grid-cols-4 gap-6">
+          <Card className="bg-white p-6 rounded-lg shadow">
             <div className="text-[#7A7570] text-sm uppercase tracking-wider mb-2">Total Businesses</div>
             <div className="text-3xl font-semibold">124</div>
           </Card>
-          <Card className="bg-white p-6 rounded-lg shadow-sm">
+          <Card className="bg-white p-6 rounded-lg shadow">
             <div className="text-[#7A7570] text-sm uppercase tracking-wider mb-2">Total Users</div>
             <div className="text-3xl font-semibold">12,504</div>
           </Card>
-          <Card className="bg-white p-6 rounded-lg shadow-sm">
+          <Card className="bg-white p-6 rounded-lg shadow">
+            <div className="text-[#7A7570] text-sm uppercase tracking-wider mb-2">Active salons</div>
+            <div className="text-3xl font-semibold">274</div>
+          </Card>
+          <Card className="bg-white p-6 rounded-lg shadow">
             <div className="text-[#7A7570] text-sm uppercase tracking-wider mb-2">Rewards Redeemed</div>
             <div className="text-3xl font-semibold">890</div>
           </Card>
@@ -61,7 +65,7 @@ const Dashboard = () => {
         {/* Main Content Grid */}
         <div className="grid grid-cols-2 gap-6">
           {/* System Activity */}
-          <Card className="bg-white p-6 rounded-lg shadow-sm">
+          <Card className="bg-white p-6 rounded-lg shadow">
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-1">System Activity</h2>
               <p className="text-sm text-[#7A7570]">Today vs Last 7 Days Overview</p>
@@ -88,7 +92,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Top Performing Businesses */}
-          <Card className="bg-white p-6 rounded-lg shadow-sm">
+          <Card className="bg-white p-6 rounded-lg shadow">
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-1">Top Performing Businesses</h2>
               <p className="text-sm text-[#7A7570]">Based on customer engagement</p>
@@ -112,15 +116,15 @@ const Dashboard = () => {
           </Card>
 
           {/* Recent Activity */}
-          <Card className="bg-white p-6 rounded-lg shadow-sm">
+          <Card className="bg-white p-6 rounded-lg shadow">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Recent Activity</h2>
-              <button className="text-sm text-[#E07B7B] hover:underline">View All</button>
+              <button className="text-sm text-[#E07B7B] hover:underline cursor-pointer">View All</button>
             </div>
             <div className="space-y-4">
               {recentActivity.map((activity) => (
                 <div key={activity.id} className="flex gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-[#C8F0E8] rounded-lg flex items-center justify-center">
+                  <div className="shrink-0 w-10 h-10 bg-[#C8F0E8] rounded-lg flex items-center justify-center">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4DB8A5" strokeWidth="2">
                       <rect x="3" y="3" width="18" height="18" rx="2" />
                       <path d="M9 11l3 3L22 4" />
@@ -128,7 +132,7 @@ const Dashboard = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-[#3D3935]">
-                      <span className="font-medium">{activity.user}</span> redeemed '{activity.service}' at {activity.business}.
+                      <span className="font-medium">{activity.user}</span> redeemed &apos;{activity.service}&apos; at {activity.business}.
                     </p>
                     <p className="text-xs text-[#7A7570] mt-1">
                       {activity.time} · Activity ID: {activity.activityId}

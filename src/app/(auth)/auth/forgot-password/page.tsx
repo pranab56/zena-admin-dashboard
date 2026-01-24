@@ -8,12 +8,6 @@ import { CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
-interface ForgotEmailResponse {
-  message?: string;
-  data?: {
-    forgetToken: string;
-  };
-}
 
 interface ApiError {
   data?: {
@@ -92,9 +86,9 @@ export default function ForgotPasswordPage() {
           {/* Title */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-semibold text-green-400 mb-2">Forgot Password?</h1>
-            <h2 className="text-xl font-medium text-gray-700 mb-3">Don't worry, we've got you covered!</h2>
+            <h2 className="text-xl font-medium text-gray-700 mb-3">Don&apos;t worry, we&apos;ve got you covered!</h2>
             <p className="text-sm text-gray-600">
-              Enter your registered email address and we'll send you<br />an OTP to reset your password
+              Enter your registered email address and we&apos;ll send you<br />an OTP to reset your password
             </p>
           </div>
 
