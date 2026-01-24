@@ -13,8 +13,8 @@ const geistSans = Geist({
 
 
 export const metadata: Metadata = {
-  title: "OptimusHS Dashboard",
-  description: "OptimusHS Dashboard for Future Pharmacy",
+  title: "Zena Admin Dashboard",
+  description: "Admin dashboard for Zena loyalty program",
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
   },
