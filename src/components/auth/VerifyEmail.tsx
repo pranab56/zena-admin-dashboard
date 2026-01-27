@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RefreshCw, Shield } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 interface ApiError {
@@ -19,6 +20,7 @@ export default function VerifyEmailPage() {
   const [otpMatchLoading, setOtpMatchLoading] = useState<boolean>(false);
   const [resendOtpLoading, setResendOtpLoading] = useState<boolean>(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const router = useRouter();
 
   // Simulated token - in real app, get from URL params
   const forgetToken = 'demo-forget-token-12345';
@@ -93,21 +95,12 @@ export default function VerifyEmailPage() {
 
       console.log('Verifying OTP:', { otp: otpValue, token: forgetToken });
 
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Your API call would go here
-      // const response = await OTPMatch({ otp: otpValue, token: forgetToken }).unwrap() as OTPCheckResponse;
-
-      alert('OTP verified successfully! Redirecting to reset password...');
-
       setOtpMatchLoading(false);
 
       // Simulate redirect
-      setTimeout(() => {
-        console.log('Redirecting to reset password page...');
-        // router.push(`/auth/reset-password?forgetOtpMatchToken=${response.data?.forgetOtpMatchToken}`);
-      }, 1000);
+      // router.push(`/auth/reset-password?forgetOtpMatchToken=${response.data?.forgetOtpMatchToken}`);
+      router.push('/auth/reset-password');
 
     } catch (error) {
       const apiError = error as ApiError;
@@ -156,8 +149,8 @@ export default function VerifyEmailPage() {
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-green-200 rounded-full blur-3xl opacity-30"></div>
 
       {/* Verification Form - Centered */}
-      <div className="flex-1 flex items-center justify-center p-8 relative z-10">
-        <div className="w-full max-w-lg p-10 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 relative z-10">
+        <div className="w-full max-w-lg px-6 py-8 sm:p-10 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl">
           {/* Icon & Title */}
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
@@ -165,10 +158,10 @@ export default function VerifyEmailPage() {
                 <Shield size={40} className="text-white" />
               </div>
             </div>
-            <h1 className="text-3xl font-semibold text-green-400 mb-2">Account Recovery</h1>
-            <h2 className="text-xl font-medium text-gray-700 mb-3">Verify Your Identity</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              To help keep your account safe, we need to make sure<br />it&apos;s really you trying to sign in
+            <h1 className="text-2xl sm:text-3xl font-semibold text-green-400 mb-2">Account Recovery</h1>
+            <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-3">Verify Your Identity</h2>
+            <p className="text-sm text-gray-600 mb-4 px-2 sm:px-0">
+              To help keep your account safe, we need to make sure it&apos;s really you trying to sign in
             </p>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
               <p className="text-xs text-gray-700 mb-1 font-semibold">Get a Verification Code</p>
@@ -183,7 +176,7 @@ export default function VerifyEmailPage() {
           <div className="space-y-6">
             {/* OTP Input Fields - 6 inputs */}
             <div>
-              <div className="flex justify-center gap-2 mb-4">
+              <div className="flex justify-center gap-1 sm:gap-2 mb-4">
                 {otp.map((digit, index) => (
                   <Input
                     key={index}
@@ -195,7 +188,7 @@ export default function VerifyEmailPage() {
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     onPaste={handlePaste}
-                    className={`w-12 h-14 text-center text-2xl font-semibold border-2 ${error ? 'border-red-500' : 'border-gray-300'
+                    className={`w-10 sm:w-12 h-12 sm:h-14 text-center text-xl sm:text-2xl font-semibold border-2 ${error ? 'border-red-500' : 'border-gray-300'
                       } rounded-lg focus:ring-2 focus:ring-green-400 transition-all`}
                   />
                 ))}

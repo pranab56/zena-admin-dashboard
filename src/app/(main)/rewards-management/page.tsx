@@ -282,10 +282,10 @@ export default function LoyaltyRewards() {
     <div className="">
       <div className="">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-2xl font-normal text-gray-800 mb-1">Loyalty Rewards</h1>
-            <p className="text-sm text-gray-700">Configure and monitor your salon&apos;s reward catalog.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="space-y-1">
+            <h1 className="text-xl md:text-2xl font-normal text-gray-800">Loyalty Rewards</h1>
+            <p className="text-xs md:text-sm text-gray-700">Configure and monitor your salon&apos;s reward catalog.</p>
           </div>
           <Button
             onClick={() => {
@@ -302,7 +302,7 @@ export default function LoyaltyRewards() {
               setImagePreview('');
               setIsModalOpen(true);
             }}
-            className="bg-[#7fa885] hover:bg-[#6f9875] text-white h-10 px-4 rounded flex items-center gap-2"
+            className="bg-[#7fa885] hover:bg-[#6f9875] text-white h-10 px-6 rounded flex items-center justify-center gap-2 w-full sm:w-auto mt-2 sm:mt-0"
           >
             <Plus className="w-4 h-4" />
             Create New Reward
@@ -320,11 +320,11 @@ export default function LoyaltyRewards() {
         </div>
 
         {/* Rewards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 xl:gap-6">
           {filteredRewards.map((reward) => (
-            <div key={reward.id} className="bg-white rounded-lg overflow-hidden border border-gray-300">
+            <div key={reward.id} className="bg-white rounded-lg overflow-hidden border border-gray-300 flex flex-col h-full shadow-sm">
               {/* Image */}
-              <div className="relative h-40 bg-gray-300">
+              <div className="relative h-44 sm:h-40 bg-gray-300 shrink-0">
                 <Image
                   src={getImageUrl(reward.image)}
                   width={1000}
@@ -332,12 +332,12 @@ export default function LoyaltyRewards() {
                   alt={reward.name}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-2 left-2 bg-[#4a4a4a] text-white text-xs px-2 py-1 rounded">
+                <div className="absolute top-2 left-2 bg-[#4a4a4a] text-[10px] font-bold text-white px-2 py-1 rounded">
                   {reward.points} PTS
                 </div>
                 {(reward.status === 'inactive' || reward.status === 'disable') && (
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-gray-700 text-white text-xs px-3 py-1 rounded uppercase tracking-wide">
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <div className="bg-gray-800/80 border border-gray-600 text-white text-[10px] px-3 py-1 rounded uppercase tracking-wider font-bold">
                       INACTIVE
                     </div>
                   </div>
@@ -345,33 +345,33 @@ export default function LoyaltyRewards() {
               </div>
 
               {/* Content */}
-              <div className="p-3">
-                <h3 className="text-sm font-medium text-gray-800 mb-1">
+              <div className="p-3.5 flex flex-col flex-1">
+                <h3 className="text-sm font-semibold text-gray-800 mb-1 line-clamp-1">
                   {reward.name}
                 </h3>
-                <p className="text-xs text-red-400 mb-3">
+                <p className="text-xs text-slate-500 mb-4 line-clamp-2 flex-1">
                   {reward.description}
                 </p>
 
                 {/* Controls */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-600">
+                    <span className={`text-[11px] font-medium ${reward.status === 'active' ? 'text-green-600' : 'text-gray-400'}`}>
                       {reward.status === 'active' ? 'Active' : 'Inactive'}
                     </span>
                     <Switch
                       checked={reward.status === 'active'}
                       onCheckedChange={() => toggleRewardStatus(reward.id)}
-                      className="data-[state=checked]:bg-[#7fa885]"
+                      className="data-[state=checked]:bg-[#7fa885] scale-90"
                     />
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleEdit(reward)}
-                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                    className="h-8 w-8 p-0 hover:bg-gray-100 text-gray-500 hover:text-gray-800"
                   >
-                    <FilePenLine className="w-4 h-4 text-gray-600" />
+                    <FilePenLine className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
@@ -381,7 +381,7 @@ export default function LoyaltyRewards() {
 
         {/* Create/Edit Reward Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl w-[95vw] sm:w-full p-4 sm:p-6 max-h-[96vh] overflow-y-auto rounded-xl">
             <DialogHeader className="mb-4">
               <DialogTitle className="text-lg text-gray-800">
                 {isEditMode ? 'Edit Reward' : 'Create New Reward'}
@@ -403,7 +403,7 @@ export default function LoyaltyRewards() {
                       height={1000}
                       className="w-full h-full object-cover rounded-lg"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <div className="absolute inset-0 bg-gray-50 bg-opacity-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                       <div className="text-white text-center">
                         <ImageIcon className="w-8 h-8 mx-auto mb-1" />
                         <p className="text-sm">Click to change image</p>
@@ -441,7 +441,7 @@ export default function LoyaltyRewards() {
             </div>
 
             {/* Form Fields */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-sm text-gray-800 mb-2 block">
                   Reward Name <span className="text-red-500">*</span>
@@ -479,7 +479,7 @@ export default function LoyaltyRewards() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-sm text-gray-800 mb-2 block">Description</label>
                 <Textarea
@@ -511,17 +511,17 @@ export default function LoyaltyRewards() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
               <Button
                 variant="ghost"
                 onClick={handleCancel}
-                className="bg-[#9d9d9d] hover:bg-[#8d8d8d] text-gray-800 px-6"
+                className="bg-[#9d9d9d] hover:bg-[#8d8d8d] text-white px-6 order-2 sm:order-1"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleSave}
-                className="bg-[#7fa885] hover:bg-[#6f9875] text-white px-6"
+                className="bg-[#7fa885] hover:bg-[#6f9875] text-white px-6 order-1 sm:order-2"
                 disabled={!formData.name || !formData.points}
               >
                 {isEditMode ? 'Update' : 'Save'}

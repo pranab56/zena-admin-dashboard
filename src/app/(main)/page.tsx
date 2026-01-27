@@ -2,7 +2,9 @@
 
 import { Gift, TrendingUp, Users } from 'lucide-react';
 import { useState } from 'react';
+import MostActiveCustomers from '../../components/super-admin/dashboard/MostActiveCustomers';
 import NotificationsList, { type Notification } from '../../components/super-admin/dashboard/NotificationsList';
+import PendingRedemptionApproval from '../../components/super-admin/dashboard/PendingRedemptionApproval';
 import PointsPieChart from '../../components/super-admin/dashboard/PointsPieChart';
 import StatsCards from '../../components/super-admin/dashboard/StatsCards';
 import VisitsTrendChart from '../../components/super-admin/dashboard/VisitsTrendChart';
@@ -14,25 +16,29 @@ const LoyaltyDashboard = () => {
       id: 1,
       title: 'Visits Today',
       value: 43,
-      icon: Users
+      icon: Users,
+      bgClass: 'bg-green-50'
     },
     {
       id: 2,
       title: 'Rewards Redeemed',
       value: 8,
-      icon: Gift
+      icon: Gift,
+      bgClass: 'bg-yellow-50'
     },
     {
       id: 3,
       title: 'Points Issued Today',
       value: 1200,
-      icon: TrendingUp
+      icon: TrendingUp,
+      bgClass: 'bg-orange-50'
     },
     {
       id: 4,
       title: 'Points Issued',
       value: 1200,
-      icon: TrendingUp
+      icon: TrendingUp,
+      bgClass: 'bg-red-50'
     },
   ];
 
@@ -81,12 +87,10 @@ const LoyaltyDashboard = () => {
   ]);
 
   return (
-    <div className="">
-      <div className="space-y-6">
+    <div className="w-full sm:px-0">
+      <div className="space-y-6 md:space-y-8">
         {/* Stats Cards */}
-
         <StatsCards stats={data} />
-
 
         {/* Visits Trend Chart */}
         <VisitsTrendChart
@@ -94,12 +98,15 @@ const LoyaltyDashboard = () => {
           highlightedMonth="Jun"
         />
 
-        {/* Bottom Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Points Earned vs Redeemed */}
-          <PointsPieChart pointsData={pointsData} />
+        {/* Middle Section */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <PendingRedemptionApproval />
+          <MostActiveCustomers />
+        </div>
 
-          {/* Latest Notifications */}
+        {/* Bottom Section */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <PointsPieChart pointsData={pointsData} />
           <NotificationsList notifications={notifications} />
         </div>
       </div>

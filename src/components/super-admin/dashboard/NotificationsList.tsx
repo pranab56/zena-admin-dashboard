@@ -26,26 +26,30 @@ const NotificationsList = ({ notifications }: NotificationsListProps) => {
   };
 
   return (
-    <Card className="border-0 shadow">
-      <CardHeader>
-        <CardTitle className="text-2xl font-serif">Latest Notifications</CardTitle>
+    <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden flex flex-col h-full ">
+      <CardHeader className="px-6 sm:px-10 py-6 sm:py-8 border-b border-gray-50 bg-[#F9FAFB]/50">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl sm:text-2xl tracking-tight">Latest Notifications</CardTitle>
+
+        </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="px-4 sm:px-8 py-6 flex-1 overflow-y-auto custom-scrollbar">
+        <div className="space-y-3">
           {notifications.map((notification) => {
             const Icon = getIconComponent(notification.icon);
             return (
               <div
                 key={notification.id}
-                className="flex items-start gap-4 p-4 rounded-lg bg-linear-to-r from-green-50 to-transparent hover:from-green-100 transition-colors cursor-pointer"
+                className="flex items-center gap-5 p-5 rounded-[1.5rem] border border-transparent hover:border-gray-100 hover:bg-gray-50 transition-all cursor-pointer group"
               >
-                <div className={`p-2 rounded-lg ${notification.type === 'redemption' ? 'bg-teal-100' : 'bg-green-100'}`}>
-                  <Icon className={`w-5 h-5 ${notification.type === 'redemption' ? 'text-teal-600' : 'text-green-600'}`} />
+                <div className={`p-3 rounded-2xl shadow-sm transition-transform group-hover:scale-110 ${notification.type === 'redemption' ? 'bg-[#FFF4CC] text-[#D97706]' : 'bg-[#EEF8ED] text-[#2F6B43]'}`}>
+                  <Icon className="w-5 h-5" strokeWidth={3} />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{notification.message}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-base font-medium leading-snug group-hover:text-[#D45D8A] transition-colors line-clamp-2">{notification.message}</p>
+                  <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mt-1">{notification.time}</p>
                 </div>
-                <span className="text-xs text-gray-500 whitespace-nowrap">{notification.time}</span>
+                <div className="w-2 h-2 rounded-full bg-gray-100 group-hover:bg-[#A8D5BA]" />
               </div>
             );
           })}

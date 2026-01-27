@@ -47,35 +47,38 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
 const VisitsTrendChart = ({ visitsData, highlightedMonth }: VisitsTrendChartProps) => {
   return (
     <Card className="border-0 shadow">
-      <CardHeader>
-        <CardTitle className="text-2xl font-serif">Visits Trend Chart</CardTitle>
+      <CardHeader className="p-5 sm:p-6">
+        <CardTitle className="text-xl sm:text-2xl font-serif">Visits Trend Chart</CardTitle>
       </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={visitsData}>
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#6B7280', fontSize: 14 }}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#6B7280', fontSize: 14 }}
-              tickFormatter={(value) => `${value / 1000}k`}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={false} />
-            <Bar dataKey="visits" radius={[8, 8, 0, 0]}>
-              {visitsData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.month === highlightedMonth ? '#EC4899' : '#FDE2E4'}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+      <CardContent className="p-2 sm:p-6">
+        <div className="h-[250px] sm:h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={visitsData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
+                tickFormatter={(value) => `${value / 1000}k`}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={false} />
+              <Bar dataKey="visits" radius={[8, 8, 0, 0]}>
+                {visitsData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.month === highlightedMonth ? '#EC4899' : '#FDE2E4'}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

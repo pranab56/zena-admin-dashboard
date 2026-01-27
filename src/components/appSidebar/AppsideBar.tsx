@@ -52,13 +52,15 @@ interface SidebarItem {
 interface ZenaSidebarProps {
   isCollapsed: boolean;
   onToggle: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 // Sidebar Component
-const ZenaSidebar = ({ isCollapsed, onToggle }: ZenaSidebarProps) => {
+const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: ZenaSidebarProps) => {
   const router = useRouter();
   const pathname = usePathname();
-  const [role, setRole] = useState<string>('salonadmin'); // Default role
+  const [role, setRole] = useState<string>(''); // Default role
   const [openSubMenus, setOpenSubMenus] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
@@ -70,8 +72,15 @@ const ZenaSidebar = ({ isCollapsed, onToggle }: ZenaSidebarProps) => {
     // If no role in localStorage, keep default as 'salonadmin'
   }, []);
 
+  // Close mobile sidebar when route changes
+  useEffect(() => {
+    if (isMobileOpen && onCloseMobile) {
+      onCloseMobile();
+    }
+  }, [pathname]);
+
   const sidebarItems: SidebarItem[] = [
-    { name: "Dashboard", path: "/", icon: LayoutDashboard, allowedRoles: ['salonadmin', 'superadmin'] },
+    { name: "Dashboard", path: "/", icon: LayoutDashboard, allowedRoles: ['salonadmin'] },
     { name: "Customers", path: "/customers", icon: Users, allowedRoles: ['salonadmin'] },
     { name: "Visits", path: "/visits", icon: FileText, allowedRoles: ['salonadmin'] },
     { name: "Rewards Management", path: "/rewards-management", icon: Gift, allowedRoles: ['salonadmin'] },
@@ -94,10 +103,7 @@ const ZenaSidebar = ({ isCollapsed, onToggle }: ZenaSidebarProps) => {
   // Filter sidebar items based on role
   // If role is not 'salonadmin' or 'superadmin', show only Dashboard
   const filteredSidebars = sidebarItems.filter(item => {
-    // Always show Dashboard for all roles
-    if (item.name === "Dashboard") return true;
-
-    // For other items, check if user role is in allowedRoles
+    // Check if user role is in allowedRoles
     return item.allowedRoles.includes(role);
   });
 
@@ -137,27 +143,39 @@ const ZenaSidebar = ({ isCollapsed, onToggle }: ZenaSidebarProps) => {
 
   return (
     <aside
-      className="h-screen border-r border-gray-200 bg-[#FFF8F5] flex flex-col transition-all duration-100 ease-in-out sticky top-0 left-0"
+      className={`h-screen border-r border-gray-200 bg-[#FFF8F5] flex flex-col transition-all duration-300 ease-in-out fixed md:sticky top-0 left-0 z-50 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
       style={{ width: isCollapsed ? '80px' : '256px' }}
     >
-      <div className='flex justify-end px-5'>
-        <button
-          onClick={onToggle}
-          className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors pt-5"
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {isCollapsed ? <Menu size={24} /> : <X size={24} />}
-        </button>
+      <div className={`flex ${isCollapsed ? 'justify-center' : 'justify-end'} px-5 py-5`}>
+        {/* Toggle button - only visible on desktop or when mobile is open */}
+        {isMobileOpen ? (
+          <button
+            onClick={onCloseMobile}
+            className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors md:hidden"
+            aria-label="Close sidebar"
+          >
+            <X size={24} />
+          </button>
+        ) : (
+          <button
+            onClick={onToggle}
+            className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors hidden md:block"
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? <Menu size={24} /> : <X size={24} />}
+          </button>
+        )}
       </div>
 
       {/* Header */}
-      <div className={`flex items-center justify-center w-full pb-5 ${isCollapsed ? 'px-4 justify-center' : 'px-6 justify-between'}`}>
+      <div className={`flex items-center justify-center w-full pb-5 ${isCollapsed ? 'px-4' : 'px-6'}`}>
         {!isCollapsed && (
           <Image
             src="/logo/logo.png"
             alt="Zena Logo"
-            width={1000}
-            height={1000}
+            width={112}
+            height={112}
             className="object-contain w-28 h-28"
           />
         )}

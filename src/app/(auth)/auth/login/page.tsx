@@ -71,9 +71,9 @@ export default function AdminLoginPage() {
       try {
         setIsLoading(true);
         localStorage.setItem('role', formData.role);
-        if(formData.role === 'superadmin'){
+        if (formData.role === 'superadmin') {
           router.push('/overview');
-        } else if(formData.role === 'salonadmin'){
+        } else if (formData.role === 'salonadmin') {
           router.push('/');
         }
       } catch (error) {
@@ -98,14 +98,14 @@ export default function AdminLoginPage() {
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-green-200 rounded-full blur-3xl opacity-30"></div>
 
       {/* Login Form - Centered */}
-      <div className="flex-1 flex items-center justify-center p-8 relative z-10">
-        <div className="w-full max-w-lg p-10 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 relative z-10">
+        <div className="w-full max-w-lg px-6 py-8 sm:p-10 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl">
           {/* Title */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-semibold text-green-400 mb-2">Welcome!</h1>
-            <h2 className="text-2xl font-medium text-gray-700 mb-3">to your Admin Dashboard.</h2>
-            <p className="text-sm text-gray-600">
-              Please sign in to access your admin dashboard and manage<br />your platform securely
+            <h1 className="text-2xl sm:text-3xl font-semibold text-green-400 mb-2">Welcome!</h1>
+            <h2 className="text-xl sm:text-2xl font-medium text-gray-700 mb-3">to your Admin Dashboard.</h2>
+            <p className="text-sm text-gray-600 px-2 sm:px-0">
+              Please sign in to access your admin dashboard and manage your platform securely
             </p>
           </div>
 

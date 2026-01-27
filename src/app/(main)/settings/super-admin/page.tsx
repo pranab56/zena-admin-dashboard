@@ -123,7 +123,7 @@ const SalonProfileSetup = () => {
   };
 
   return (
-    <div className="">
+    <div className="px-4 sm:px-0">
       <div className="">
         {/* Header */}
         <div className="mb-6">
@@ -166,13 +166,13 @@ const SalonProfileSetup = () => {
         </div>
 
         {/* Location and Salon Name */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
             <div className="relative">
               <Input
                 defaultValue="123 Beauty Lane, Beverly Hills"
-                className="bg-white border-gray-400 pr-10"
+                className="bg-white border-gray-400 pr-10 h-11"
               />
               <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600" />
             </div>
@@ -181,7 +181,7 @@ const SalonProfileSetup = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Salon Name</label>
             <Input
               defaultValue="Bloom Beauty Lounge"
-              className="bg-white border-gray-400"
+              className="bg-white border-gray-400 h-11"
             />
           </div>
         </div>
@@ -191,7 +191,7 @@ const SalonProfileSetup = () => {
           <label className="block text-sm font-medium text-gray-700 mb-2">Services</label>
           <Input
             defaultValue="Luxury hair & skin care"
-            className="bg-white border-gray-400"
+            className="bg-white border-gray-400 h-11"
           />
         </div>
 
@@ -239,15 +239,15 @@ const SalonProfileSetup = () => {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end">
-          <Button className="bg-pink-600 hover:bg-pink-700 text-white px-8">
+        <div className="flex justify-end pt-4">
+          <Button className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700 text-white px-10 h-12 text-sm font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-pink-100 transition-all active:scale-95">
             Save all Changes
           </Button>
         </div>
 
         {/* Operating Hours Modal */}
         <Dialog open={showHoursModal} onOpenChange={setShowHoursModal}>
-          <DialogContent className="max-w-xl bg-white p-0 border-none">
+          <DialogContent className="max-w-xl w-[95vw] sm:w-full bg-white p-0 border-none rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
                 <div>
@@ -257,64 +257,76 @@ const SalonProfileSetup = () => {
                 </div>
               </div>
 
-              {/* Table Header */}
-              <div className="grid grid-cols-[140px_1fr_1fr] gap-4 mb-4 text-sm text-gray-700 font-medium">
+              {/* Table Header - Hidden on Mobile */}
+              <div className="hidden sm:grid grid-cols-[140px_1fr_1fr] gap-4 mb-4 text-sm text-gray-700 font-medium">
                 <div>Day</div>
                 <div>Start Time</div>
                 <div>End Time</div>
               </div>
 
               {/* Days List */}
-              <div className="space-y-3 mb-6">
+              <div className="space-y-4 sm:space-y-3 mb-6">
                 {Object.keys(operatingHours).map((day) => (
-                  <div key={day} className="grid grid-cols-[140px_1fr_1fr] gap-4 items-center">
-                    <div className="flex items-center gap-2">
+                  <div key={day} className="flex flex-col sm:grid sm:grid-cols-[140px_1fr_1fr] gap-3 sm:gap-4 items-start sm:items-center pb-4 sm:pb-0 border-b sm:border-none border-gray-100 last:border-none">
+                    <div className="flex items-center gap-2 min-w-[140px]">
                       <Checkbox
                         checked={operatingHours[day].enabled}
                         onCheckedChange={() => toggleDay(day)}
-                        className="data-[state=checked]:bg-pink-600 data-[state=checked]:border-pink-600"
+                        className="data-[state=checked]:bg-pink-600 data-[state=checked]:border-pink-600 h-5 w-5"
                       />
-                      <span className="text-sm text-gray-700">{day}</span>
+                      <span className="text-sm font-bold sm:font-normal text-gray-800 sm:text-gray-700">{day}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={operatingHours[day].start}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => updateTime(day, 'start', e.target.value)}
-                        disabled={!operatingHours[day].enabled}
-                        className="bg-white border-gray-400 text-center text-sm h-9"
-                        placeholder="__:__"
-                      />
-                      <select
-                        value={operatingHours[day].startPeriod}
-                        onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                          updateTimePeriod(day, 'startPeriod', e.target.value as 'AM' | 'PM')
-                        }
-                        disabled={!operatingHours[day].enabled}
-                        className="bg-white border border-gray-400 rounded text-sm h-9 px-2"
-                      >
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                      </select>
+
+                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full">
+                      <div className="flex flex-col sm:hidden">
+                        <span className="text-[10px] text-gray-400 uppercase font-bold mb-1">Start</span>
+                      </div>
+                      <div className="flex items-center gap-2 w-full">
+                        <Input
+                          value={operatingHours[day].start}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => updateTime(day, 'start', e.target.value)}
+                          disabled={!operatingHours[day].enabled}
+                          className="bg-white border-gray-400 text-center text-sm h-10 w-full"
+                          placeholder="__:__"
+                        />
+                        <select
+                          value={operatingHours[day].startPeriod}
+                          onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                            updateTimePeriod(day, 'startPeriod', e.target.value as 'AM' | 'PM')
+                          }
+                          disabled={!operatingHours[day].enabled}
+                          className="bg-white border border-gray-400 rounded text-sm h-10 px-2 min-w-[60px]"
+                        >
+                          <option value="AM">AM</option>
+                          <option value="PM">PM</option>
+                        </select>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={operatingHours[day].end}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => updateTime(day, 'end', e.target.value)}
-                        disabled={!operatingHours[day].enabled}
-                        className="bg-white border-gray-400 text-center text-sm h-9"
-                        placeholder="__:__"
-                      />
-                      <select
-                        value={operatingHours[day].endPeriod}
-                        onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                          updateTimePeriod(day, 'endPeriod', e.target.value as 'AM' | 'PM')
-                        }
-                        disabled={!operatingHours[day].enabled}
-                        className="bg-white border border-gray-400 rounded text-sm h-9 px-2"
-                      >
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
-                      </select>
+
+                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full">
+                      <div className="flex flex-col sm:hidden">
+                        <span className="text-[10px] text-gray-400 uppercase font-bold mb-1">End</span>
+                      </div>
+                      <div className="flex items-center gap-2 w-full">
+                        <Input
+                          value={operatingHours[day].end}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => updateTime(day, 'end', e.target.value)}
+                          disabled={!operatingHours[day].enabled}
+                          className="bg-white border-gray-400 text-center text-sm h-10 w-full"
+                          placeholder="__:__"
+                        />
+                        <select
+                          value={operatingHours[day].endPeriod}
+                          onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                            updateTimePeriod(day, 'endPeriod', e.target.value as 'AM' | 'PM')
+                          }
+                          disabled={!operatingHours[day].enabled}
+                          className="bg-white border border-gray-400 rounded text-sm h-10 px-2 min-w-[60px]"
+                        >
+                          <option value="AM">AM</option>
+                          <option value="PM">PM</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                 ))}

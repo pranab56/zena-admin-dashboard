@@ -1,10 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card';
+import Image from 'next/image';
 import React from 'react';
 
 interface StatItem {
   id: number;
   title: string;
   value: number;
+  bgClass: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
@@ -27,28 +29,28 @@ const formatValue = (value: number): string | number => {
 
 const StatsCards = ({ stats }: StatsCardsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((stat) => {
         const Icon = stat.icon;
 
         return (
           <Card
             key={stat.id}
-            className="bg-linear-to-r from-pink-100 to-pink-50 border-0 shadow"
+            className={`${stat.bgClass} border-none shadow-sm rounded-[2rem] overflow-hidden transition-all `}
           >
-            <CardContent className="p-6">
+            <CardContent className="p-8">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">
                     {stat.title}
                   </p>
-                  <p className="text-4xl font-bold text-gray-900">
+                  <p className="text-4xl font-black text-gray-900 group-hover:scale-105 transition-transform origin-left">
                     {formatValue(stat.value)}
                   </p>
                 </div>
 
-                <div className="bg-white p-2 rounded-lg shadow-sm">
-                  <Icon className="w-6 h-6 text-pink-500" />
+                <div className="bg-white/50 p-3 rounded-2xl shadow-sm border border-white/50 group-hover:rotate-12 transition-transform">
+                  <Image src={"/logo/cardUser.png"} alt="icon" width={32} height={32} className='w-full h-full' />
                 </div>
               </div>
             </CardContent>

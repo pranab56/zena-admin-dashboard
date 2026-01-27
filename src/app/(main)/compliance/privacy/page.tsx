@@ -86,47 +86,56 @@ const PrivacyPolicyPage = () => {
   }
 
   return (
-    <div className="p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">{title}</CardTitle>
+    <div className="w-full max-w-5xl mx-auto space-y-8 pb-10">
+      <div className="px-1 pt-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">Compliance & Policies</h1>
+        <p className="text-gray-500 text-sm md:text-base mt-2">Manage your salon&apos;s legal and regulatory documentation.</p>
+      </div>
+
+      <Card className="border-none shadow-sm rounded-[2.5rem] bg-white overflow-hidden">
+        <CardHeader className="p-8 pb-4 border-b border-gray-50">
+          <CardTitle className="text-xl font-bold text-gray-800">{title}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
+        <CardContent className="p-8 pt-6">
+          <div className="space-y-8">
             {/* ✅ Only render editor when data has loaded */}
             {hasDataLoaded ? (
-              <TipTapEditor
-                description={content}
-                handleJobDescription={setContent}
-                minHeight="400px"
-                maxHeight="600px"
-              />
+              <div className="rounded-3xl overflow-hidden border border-gray-100 shadow-inner bg-white/50">
+                <TipTapEditor
+                  description={content}
+                  handleJobDescription={setContent}
+                  minHeight="400px"
+                  maxHeight="650px"
+                />
+              </div>
             ) : (
-              <div className="flex justify-center items-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin" />
-                <p className="ml-2">Loading editor...</p>
+              <div className="flex flex-col justify-center items-center h-[500px] bg-gray-50/50 rounded-3xl border border-dashed border-gray-200">
+                <Loader2 className="h-10 w-10 animate-spin text-[#A8D5BA] mb-4" />
+                <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Initializing Editor...</p>
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
               <Button
                 variant="outline"
                 onClick={() => window.history.back()}
                 disabled={isUpdating}
+                className="py-6 px-8 rounded-2xl border-gray-100 text-gray-500 font-bold hover:bg-gray-50 order-2 sm:order-1"
               >
-                Back
+                Back to Dashboard
               </Button>
               <Button
                 onClick={handleUpdate}
                 disabled={isUpdating || isContentEmpty(content)}
+                className="py-6 px-10 rounded-2xl bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-black shadow-lg shadow-green-100 transition-all hover:translate-y-[-2px] active:translate-y-0 order-1 sm:order-2"
               >
                 {isUpdating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
-                  </>
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Synchronizing...</span>
+                  </div>
                 ) : (
-                  "Update Privacy"
+                  "Update Policy"
                 )}
               </Button>
             </div>

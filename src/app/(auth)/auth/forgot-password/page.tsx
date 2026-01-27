@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -20,6 +21,7 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -53,10 +55,8 @@ export default function ForgotPasswordPage() {
       setIsSuccess(true);
 
       // Simulate redirect after success
-      setTimeout(() => {
-        alert('OTP sent! Redirecting to verification page...');
-        // router.push(`/auth/verify-email?forgetToken=${response.data?.forgetToken}`);
-      }, 1000);
+      router.push('/auth/verify-email');
+      // router.push(`/auth/verify-email?forgetToken=${response.data?.forgetToken}`);
 
       setIsLoading(false);
     } catch (error) {
@@ -81,14 +81,14 @@ export default function ForgotPasswordPage() {
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-green-200 rounded-full blur-3xl opacity-30"></div>
 
       {/* Forgot Password Form - Centered */}
-      <div className="flex-1 flex items-center justify-center p-8 relative z-10">
-        <div className="w-full max-w-md p-10 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 relative z-10">
+        <div className="w-full max-w-md px-6 py-8 sm:p-10 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl">
           {/* Title */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-semibold text-green-400 mb-2">Forgot Password?</h1>
-            <h2 className="text-xl font-medium text-gray-700 mb-3">Don&apos;t worry, we&apos;ve got you covered!</h2>
-            <p className="text-sm text-gray-600">
-              Enter your registered email address and we&apos;ll send you<br />an OTP to reset your password
+            <h1 className="text-2xl sm:text-3xl font-semibold text-green-400 mb-2">Forgot Password?</h1>
+            <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-3">Don&apos;t worry, we&apos;ve got you covered!</h2>
+            <p className="text-sm text-gray-600 px-2 sm:px-0">
+              Enter your registered email address and we&apos;ll send you an OTP to reset your password
             </p>
           </div>
 

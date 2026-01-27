@@ -41,11 +41,11 @@ const VisitBasedLogicPage = () => {
   };
 
   return (
-    <div className="">
+    <div className="sm:px-0">
       <div className="">
         {/* Header Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-2">
             Visit-Based Logic
           </h1>
           <p className="text-gray-600">
@@ -56,7 +56,7 @@ const VisitBasedLogicPage = () => {
         {/* Visit Rewards and Invite Friend Rewards Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Visit Rewards Card */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-sm p-5 sm:p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
               Visit Rewards
             </h2>
@@ -75,7 +75,7 @@ const VisitBasedLogicPage = () => {
           </div>
 
           {/* Invite Friend Rewards Card */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-sm p-5 sm:p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
               Invite Friend Rewards
             </h2>
@@ -95,7 +95,7 @@ const VisitBasedLogicPage = () => {
         </div>
 
         {/* Monthly Limits Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-5 sm:p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-6">
             Monthly Limits
           </h2>
@@ -132,7 +132,7 @@ const VisitBasedLogicPage = () => {
         </div>
 
         {/* Staff Controls & Permissions Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-5 sm:p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-6">
             Staff Controls & Permissions
           </h2>
@@ -179,17 +179,17 @@ const VisitBasedLogicPage = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
           <Button
             onClick={handleCancel}
             variant="outline"
-            className="px-8 h-11 border-2 border-pink-300 text-pink-500 hover:bg-pink-50 hover:text-pink-600 rounded-lg font-medium"
+            className="w-full sm:w-auto px-8 h-12 sm:h-11 border-2 border-pink-300 text-pink-500 hover:bg-pink-50 hover:text-pink-600 rounded-lg font-medium order-2 sm:order-1"
           >
-            Cancell
+            Cancel
           </Button>
           <Button
             onClick={handleSave}
-            className="px-8 h-11 bg-primary hover:bg-primary text-gray-700 rounded-lg font-medium shadow-sm"
+            className="w-full sm:w-auto px-8 h-12 sm:h-11 bg-primary hover:bg-primary text-gray-700 rounded-lg font-medium shadow-sm order-1 sm:order-2"
           >
             Save Changes
           </Button>

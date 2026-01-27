@@ -47,23 +47,21 @@ const SystemConfigurationPage = () => {
   ];
 
   return (
-    <div className="">
+    <div className="sm:px-0">
       <div className="">
         {/* Header Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-3">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-3">
             System Configuration
           </h1>
-          <p className="text-gray-600 leading-relaxed">
-            Manage global platform parameters, security protocols, and white-label
-            <br />
-            Platform Branding branding for all business tenants.
+          <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+            Manage global platform parameters, security protocols, and white-label Platform Branding branding for all business tenants.
           </p>
         </div>
 
         {/* General Settings Section */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-5 sm:p-8 mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6">
             General Settings
           </h2>
 
@@ -120,8 +118,8 @@ const SystemConfigurationPage = () => {
         </div>
 
         {/* Security & Access Section */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-5 sm:p-8 mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6">
             Security & Access
           </h2>
 
@@ -141,17 +139,17 @@ const SystemConfigurationPage = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
           <Button
             onClick={handleCancel}
             variant="outline"
-            className="px-8 h-11 border-2 border-pink-300 text-pink-500 hover:bg-pink-50 hover:text-pink-600 rounded-lg font-medium"
+            className="w-full sm:w-auto px-8 h-12 sm:h-11 border-2 border-pink-300 text-pink-500 hover:bg-pink-50 hover:text-pink-600 rounded-lg font-medium order-2 sm:order-1"
           >
-            Cancell
+            Cancel
           </Button>
           <Button
             onClick={handleSave}
-            className="px-8 h-11 bg-primary hover:bg-green-500 text-gray-700 rounded-lg font-medium shadow-sm"
+            className="w-full sm:w-auto px-8 h-12 sm:h-11 bg-primary hover:bg-green-500 text-gray-700 rounded-lg font-medium shadow-sm order-1 sm:order-2"
           >
             Save Changes
           </Button>

@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Users } from "lucide-react";
+import Image from 'next/image';
 import CustomerManagement from "../../../components/super-admin/Customers/CustomerManagement";
 
 
@@ -19,18 +20,21 @@ const page = () => {
       title: "Total Customers",
       value: 43,
       icon: Users,
+      bgClass: 'bg-[#EEF8ED]'
     },
     {
       id: 2,
       title: "Active Customers",
       value: 8,
       icon: Users,
+      bgClass: 'bg-[#FFF8F5]'
     },
     {
       id: 3,
       title: "Points Issued Today",
       value: 1200,
       icon: Users,
+      bgClass: 'bg-[#FFF4CC]'
     },
   ];
 
@@ -38,14 +42,14 @@ const page = () => {
     <div>
       <div className="space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {data.map((stat) => {
             const Icon = stat.icon;
 
             return (
               <Card
                 key={stat.id}
-                className="bg-linear-to-r from-pink-100 to-pink-50 border-0 shadow"
+                className={stat.bgClass}
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -58,8 +62,8 @@ const page = () => {
                       </p>
                     </div>
 
-                    <div className="bg-white p-2 rounded-lg shadow-sm">
-                      <Icon className="w-6 h-6 text-pink-500" />
+                    <div className="">
+                      <Image src={"/logo/cardUser.png"} alt="icon" width={40} height={40} className='w-full h-full' />
                     </div>
                   </div>
                 </CardContent>
