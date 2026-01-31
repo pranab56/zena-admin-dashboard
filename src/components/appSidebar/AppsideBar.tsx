@@ -1,4 +1,5 @@
 import {
+  ChartNoAxesColumnIncreasing,
   ChevronDown,
   ChevronUp,
   ClipboardList,
@@ -88,6 +89,7 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
     { name: "Settings", path: "/settings/super-admin", icon: Settings, allowedRoles: ['salonadmin'] },
     { name: "Overview", path: "/overview", icon: Grid3x3, allowedRoles: ['superadmin'] },
     { name: "Salons Management", path: "/salons-management", icon: Scissors, allowedRoles: ['superadmin'] },
+    { name: "Analytics", path: "/analytics", icon: ChartNoAxesColumnIncreasing, allowedRoles: ['superadmin'] },
     {
       name: "Settings",
       path: "/settings/admin",

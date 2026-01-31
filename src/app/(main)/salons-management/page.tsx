@@ -82,8 +82,8 @@ const SalonsManagement = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
+      <div className="flex flex-col justify-between sm:flex-row gap-4">
+        <div className="relative w-full">
           <Input
             className="pl-4 pr-10 py-6 bg-[#F5F5F3] border-none rounded-lg text-gray-500 placeholder:text-gray-400 focus-visible:ring-0"
             placeholder="Search by salon name, city ..."
@@ -91,12 +91,12 @@ const SalonsManagement = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="w-full sm:w-64">
+        <div className="w-full sm:w-auto">
           <Select>
             <SelectTrigger className="py-6 bg-[#F5F5F3] border-none rounded-lg text-gray-500 focus:ring-0">
               <SelectValue placeholder="Search by Status" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className='w-full'>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="expired">Expired</SelectItem>
             </SelectContent>
@@ -108,8 +108,8 @@ const SalonsManagement = () => {
       <div className="border border-gray-100 rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <Table className="min-w-[1000px]">
-            <TableHeader>
-              <tr className="bg-[#E5E9E4] hover:bg-[#E5E9E4] border-none">
+            <TableHeader className='bg-[#F1F8F1]'>
+              <tr className=" border-none">
                 <TableHead className="text-gray-600 font-bold py-4 pl-6 uppercase text-[13px]">SALON NAME</TableHead>
                 <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">START DATE</TableHead>
                 <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">EXPIRY DATE</TableHead>
