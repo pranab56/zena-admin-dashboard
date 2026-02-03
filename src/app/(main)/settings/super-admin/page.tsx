@@ -21,6 +21,8 @@ interface OperatingHours {
 const SalonProfileSetup = () => {
   const [showHoursModal, setShowHoursModal] = useState(false);
   const [salonImage, setSalonImage] = useState<string | null>(null);
+  const [locationInput, setLocationInput] = useState<string>('Dhaka, Bangladesh');
+  const [locationUrl, setLocationUrl] = useState<string>('https://maps.google.com/maps?q=Dhaka%2C%20Bangladesh&output=embed&z=15');
   const [operatingHours, setOperatingHours] = useState<OperatingHours>({
     Monday: { enabled: true, start: '9:00', end: '8:00', startPeriod: 'AM', endPeriod: 'PM' },
     Tuesday: { enabled: true, start: '9:00', end: '8:00', startPeriod: 'AM', endPeriod: 'PM' },
@@ -57,6 +59,73 @@ const SalonProfileSetup = () => {
         console.error('Error reading file');
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Convert any Google Maps URL to embed URL
+  const convertToEmbedUrl = (url: string): string => {
+    // If already an embed URL, return as is
+    if (url.includes('/maps/embed')) {
+      return url;
+    }
+
+    // Handle short URLs (maps.app.goo.gl) - these need special handling
+    if (url.includes('maps.app.goo.gl') || url.includes('goo.gl/maps')) {
+      // Extract the short code
+      const shortCode = url.split('/').pop()?.split('?')[0];
+      if (shortCode) {
+        // Use the embed API with the full URL as query
+        // This will make Google Maps resolve the short URL and show the location
+        return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
+      }
+    }
+
+    // Handle regular Google Maps URLs with coordinates
+    const coordMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (coordMatch) {
+      const [, lat, lng] = coordMatch;
+      return `https://maps.google.com/maps?q=${lat},${lng}&output=embed&z=15`;
+    }
+
+    // Handle place URLs
+    const placeMatch = url.match(/place\/([^/]+)/);
+    if (placeMatch) {
+      const place = decodeURIComponent(placeMatch[1].replace(/\+/g, ' '));
+      return `https://maps.google.com/maps?q=${encodeURIComponent(place)}&output=embed`;
+    }
+
+    // Handle search query URLs
+    const queryMatch = url.match(/[?&]q=([^&]+)/);
+    if (queryMatch) {
+      const query = decodeURIComponent(queryMatch[1].replace(/\+/g, ' '));
+      return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+    }
+
+    // If we can't parse it, try to use the whole URL as a query
+    return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
+  };
+
+  const handleLocationInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    setLocationInput(input);
+
+    if (!input.trim()) {
+      setLocationUrl('');
+      return;
+    }
+
+    // Debounce the map update - wait for user to stop typing
+    // For now, update immediately for better UX
+    const trimmedInput = input.trim();
+
+    // If it looks like a Google Maps URL, convert it
+    if (trimmedInput.includes('google.com/maps') || trimmedInput.includes('maps.app.goo.gl') || trimmedInput.includes('goo.gl/maps')) {
+      const embedUrl = convertToEmbedUrl(trimmedInput);
+      setLocationUrl(embedUrl);
+    } else {
+      // Treat as location name/address and create embed URL
+      const embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(trimmedInput)}&output=embed&z=15`;
+      setLocationUrl(embedUrl);
     }
   };
 
@@ -165,25 +234,49 @@ const SalonProfileSetup = () => {
           )}
         </div>
 
-        {/* Location and Salon Name */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-            <div className="relative">
-              <Input
-                defaultValue="123 Beauty Lane, Beverly Hills"
-                className="bg-white border-gray-400 pr-10 h-11"
-              />
-              <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600" />
-            </div>
+        {/* Location Map Section */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+          <div className="relative h-80 rounded-lg overflow-hidden bg-gray-100 mb-3 border border-gray-300">
+            {/* Google Maps Embed */}
+            {locationUrl ? (
+              <iframe
+                src={locationUrl}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="absolute inset-0"
+              ></iframe>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">Enter a location name or address below</p>
+                </div>
+              </div>
+            )}
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Salon Name</label>
+          <div className="relative">
             <Input
-              defaultValue="Bloom Beauty Lounge"
-              className="bg-white border-gray-400 h-11"
+              value={locationInput}
+              onChange={handleLocationInputChange}
+              className="bg-white border-gray-400 pr-10 h-11"
+              placeholder="Enter location name (e.g., Gulshan 2, Dhaka, Bangladesh)"
             />
+            <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-600" />
           </div>
+        </div>
+
+        {/* Salon Name */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Salon Name</label>
+          <Input
+            defaultValue="Bloom Beauty Lounge"
+            className="bg-white border-gray-400 h-11"
+          />
         </div>
 
         {/* Services */}

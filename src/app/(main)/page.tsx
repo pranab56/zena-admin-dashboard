@@ -28,7 +28,7 @@ const LoyaltyDashboard = () => {
     },
     {
       id: 3,
-      title: 'Points Issued Today',
+      title: 'Avg. Visits / Slaon',
       value: 1200,
       icon: TrendingUp,
       bgClass: 'bg-orange-50'
@@ -91,7 +91,6 @@ const LoyaltyDashboard = () => {
       <div className="space-y-6 md:space-y-8">
         {/* Stats Cards */}
         <StatsCards stats={data} />
-
         {/* Visits Trend Chart */}
         <VisitsTrendChart
           visitsData={visitsData}

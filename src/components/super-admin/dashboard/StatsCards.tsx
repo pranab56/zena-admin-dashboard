@@ -41,7 +41,7 @@ const StatsCards = ({ stats }: StatsCardsProps) => {
             <CardContent className="p-8">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">
+                  <p className="text-[12px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">
                     {stat.title}
                   </p>
                   <p className="text-4xl font-black text-gray-900 group-hover:scale-105 transition-transform origin-left">

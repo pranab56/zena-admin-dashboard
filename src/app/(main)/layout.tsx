@@ -35,7 +35,6 @@ export default function RootLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-screen transition-all duration-300 ease-in-out bg-gray-100 min-w-0 overflow-hidden">
         <Header onMenuClick={() => setIsMobileOpen(true)} />
-
         <main className="flex-1 p-4 md:p-6 overflow-y-auto bg-white custom-scrollbar">
           <div className="mx-auto w-full max-w-full">
             {children}
