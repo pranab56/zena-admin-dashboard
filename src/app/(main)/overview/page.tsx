@@ -27,7 +27,8 @@ const Dashboard = () => {
   // Metrics Data
   const metrics = [
     { title: "TOTAL SALONS", value: "124", bg: "bg-[#E3ECE4]" },
-    { title: "ACTIVE SALONS", value: "274", bg: "bg-[#E9E3C1]" },
+    { title: "Total Visit Frequency", value: "274", bg: "bg-[#E9E3C1]" },
+    { title: "AVG. Visit Frequency", value: "274", bg: "bg-[#F3A5A0]" },
     { title: "TOTAL USERS", value: "12,504", bg: "bg-[#EFD1C9]" },
     { title: "TODAY REVENUE", value: "18.5K", bg: "bg-[#E0E0E0]" },
   ];
@@ -75,7 +76,7 @@ const Dashboard = () => {
   return (
     <div className="sm:px-6 lg:px-0 min-h-screen pb-10 space-y-6 md:space-y-8">
       {/* Metrics Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-5 gap-6">
         {metrics.map((m, i) => (
           <Card key={i} className={`${m.bg} border-none shadow-sm h-32 flex flex-col justify-center px-6`}>
             <p className="text-[#6B7280] text-sm font-semibold tracking-wide uppercase">{m.title}</p>

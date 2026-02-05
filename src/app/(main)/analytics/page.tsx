@@ -29,7 +29,6 @@ import {
   Calendar,
   ChevronDown,
   Clock,
-  MoreVertical,
   Search,
   User
 } from "lucide-react";
@@ -156,7 +155,7 @@ export default function Analytics() {
                         View
                       </Button>
                     </SheetTrigger>
-                    
+
                     {/* Sheet Content Implementation */}
                     <SheetContent className="sm:max-w-md overflow-y-auto px-4">
                       <SheetHeader className="text-left space-y-0  px-2">
@@ -170,10 +169,14 @@ export default function Analytics() {
 
                       <div className="space-y-8 mt-6">
                         {/* Stat Cards */}
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-4 gap-3">
                           <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
                             <p className="text-xl font-bold">$1,240</p>
-                            <p className="text-[10px] text-gray-400 leading-tight">Avg. Daily Revenue</p>
+                            <p className="text-[10px] text-gray-400 leading-tight">Monthly Visit Freq.</p>
+                          </div>
+                          <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
+                            <p className="text-xl font-bold">$1,440</p>
+                            <p className="text-[10px] text-gray-400 leading-tight">Monthly Avg. Visit Freq.</p>
                           </div>
                           <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
                             <p className="text-xl font-bold">$32,100</p>
