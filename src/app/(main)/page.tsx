@@ -27,13 +27,6 @@ const LoyaltyDashboard = () => {
       bgClass: 'bg-yellow-50'
     },
     {
-      id: 3,
-      title: 'Avg. Visits / Slaon',
-      value: 1200,
-      icon: TrendingUp,
-      bgClass: 'bg-orange-50'
-    },
-    {
       id: 4,
       title: 'Points Issued',
       value: 1200,

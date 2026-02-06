@@ -29,7 +29,7 @@ const formatValue = (value: number): string | number => {
 
 const StatsCards = ({ stats }: StatsCardsProps) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {stats.map((stat) => {
         const Icon = stat.icon;
 
@@ -38,7 +38,7 @@ const StatsCards = ({ stats }: StatsCardsProps) => {
             key={stat.id}
             className={`${stat.bgClass} border-none shadow-sm rounded-[2rem] overflow-hidden transition-all `}
           >
-            <CardContent className="p-8">
+            <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-[12px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">

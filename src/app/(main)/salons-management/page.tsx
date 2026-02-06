@@ -2,10 +2,12 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -22,15 +24,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { MoreHorizontal } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { format, parse } from "date-fns";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from 'next/link';
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 const SalonsManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showWarningModal, setShowWarningModal] = useState(false);
+
+  // Form states for new salon
+  const [newSalonStartDate, setNewSalonStartDate] = useState<Date>();
+  const [newSalonExpiryDate, setNewSalonExpiryDate] = useState<Date>();
 
   const stats = [
     { label: "ACTIVE SALONS", value: "24", bg: "bg-[#F5F5F3]" },
@@ -40,13 +54,48 @@ const SalonsManagement = () => {
 
   const salons = [
     { id: "SLN-9921", name: "Elite Hair & Spa", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Expired" },
-    { id: "SLN-9921", name: "Elite Hair & Spa", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Expired" },
-    { id: "SLN-9921", name: "Elite Hair & Spa", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Expired" },
-    { id: "SLN-9921", name: "Elite Hair & Spa", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
-    { id: "SLN-9921", name: "Elite Hair & Spa", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
-    { id: "SLN-9921", name: "Elite Hair & Spa", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Expired" },
-    { id: "SLN-9921", name: "Elite Hair & Spa", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
+    { id: "SLN-9922", name: "Luxe Salon", start: "01-15-2025", expiry: "01-15-2026", remaining: "Expiring with 15 days", customers: "850", city: "Abu Dhabi", status: "Expired" },
+    { id: "SLN-9923", name: "Bella Spa", start: "05-20-2025", expiry: "05-20-2026", remaining: "320 days left", customers: "2100", city: "Sharjah", status: "Active" },
+    { id: "SLN-9924", name: "Glow Parlour", start: "03-10-2025", expiry: "03-10-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
+    { id: "SLN-9925", name: "Modern Cuts", start: "08-01-2025", expiry: "08-01-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
+    { id: "SLN-9926", name: "Royal Wellness", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Expired" },
+    { id: "SLN-9927", name: "Urban Chic", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
+    { id: "SLN-9928", name: "The Grooming Room", start: "10-05-2025", expiry: "10-05-2026", remaining: "200 days left", customers: "540", city: "Dubai", status: "Active" },
+    { id: "SLN-9929", name: "Silk & Smooth", start: "11-11-2025", expiry: "11-11-2026", remaining: "250 days left", customers: "1100", city: "Ajman", status: "Active" },
+    { id: "SLN-9000", name: "Oasis Beauty", start: "02-14-2025", expiry: "02-14-2026", remaining: "Expiring with 2 days", customers: "300", city: "Dubai", status: "Expired" },
   ];
+
+  const filteredSalons = useMemo(() => {
+    return salons.filter((salon) => {
+      const matchesSearch =
+        salon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        salon.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        salon.id.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus = statusFilter === "all" || salon.status.toLowerCase() === statusFilter.toLowerCase();
+
+      let matchesDate = true;
+      if (startDate || endDate) {
+        const salonDate = parse(salon.start, "MM-dd-yyyy", new Date());
+        if (startDate && salonDate < startDate) matchesDate = false;
+        if (endDate && salonDate > endDate) matchesDate = false;
+      }
+
+      return matchesSearch && matchesStatus && matchesDate;
+    });
+  }, [searchTerm, statusFilter, startDate, endDate]);
+
+  const totalPages = Math.ceil(filteredSalons.length / itemsPerPage);
+  const paginatedSalons = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredSalons.slice(start, start + itemsPerPage);
+  }, [filteredSalons, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   const handleSaveSalon = () => {
     setShowAddModal(false);
@@ -82,25 +131,87 @@ const SalonsManagement = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col justify-between sm:flex-row gap-4">
-        <div className="relative w-full">
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="relative flex-1">
           <Input
             className="pl-4 pr-10 py-6 bg-[#F5F5F3] border-none rounded-lg text-gray-500 placeholder:text-gray-400 focus-visible:ring-0"
             placeholder="Search by salon name, city ..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
-        <div className="w-full sm:w-auto">
-          <Select>
-            <SelectTrigger className="py-6 bg-[#F5F5F3] border-none rounded-lg text-gray-500 focus:ring-0">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Select value={statusFilter} onValueChange={(val) => {
+            setStatusFilter(val);
+            setCurrentPage(1);
+          }}>
+            <SelectTrigger className="w-full sm:w-[200px] py-6 bg-[#F5F5F3] border-none rounded-lg text-gray-500 focus:ring-0">
               <SelectValue placeholder="Search by Status" />
             </SelectTrigger>
             <SelectContent className='w-full'>
+              <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="expired">Expired</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Date Picker Filters */}
+          <div className="flex gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full sm:w-[160px] py-6 bg-[#F5F5F3] border-none rounded-lg text-gray-500 hover:bg-[#F5F5F3] hover:text-gray-600 justify-start font-normal",
+                    !startDate && "text-gray-400"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, "PP") : <span>Start Date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={(date) => {
+                    setStartDate(date);
+                    setCurrentPage(1);
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full sm:w-[160px] py-6 bg-[#F5F5F3] border-none rounded-lg text-gray-500 hover:bg-[#F5F5F3] hover:text-gray-600 justify-start font-normal",
+                    !endDate && "text-gray-400"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDate ? format(endDate, "PP") : <span>End Date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  onSelect={(date) => {
+                    setEndDate(date);
+                    setCurrentPage(1);
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </div>
 
@@ -117,50 +228,51 @@ const SalonsManagement = () => {
                 <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">CUTOMERS COUNT</TableHead>
                 <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">CITY</TableHead>
                 <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">STATUS</TableHead>
-                <TableHead className="text-gray-600 font-bold py-4 pr-6 uppercase text-[13px]">ACTIONS</TableHead>
               </tr>
             </TableHeader>
             <TableBody>
-              {salons.map((salon, i) => (
-                <TableRow key={i} className="group hover:bg-gray-50/50 border-b border-gray-50 transition-colors relative">
-                  <TableCell className="py-5 pl-6">
-                    <p className="font-semibold text-gray-800 text-[15px]">{salon.name}</p>
-                    <p className="text-xs text-gray-400">ID: {salon.id}</p>
+              {paginatedSalons.length > 0 ? (
+                paginatedSalons.map((salon, i) => (
+                  <TableRow key={i} className="group hover:bg-gray-50/50 border-b border-gray-50 transition-colors relative">
+                    <TableCell className="py-5 pl-6">
+                      <p className="font-semibold text-gray-800 text-[15px]">{salon.name}</p>
+                      <p className="text-xs text-gray-400">ID: {salon.id}</p>
+                    </TableCell>
+                    <TableCell className="text-gray-700 font-medium text-[15px]">{salon.start}</TableCell>
+                    <TableCell className="text-gray-700 font-medium text-[15px]">{salon.expiry}</TableCell>
+                    <TableCell>
+                      <Badge className="bg-[#FDE6D2] text-[#D97706] hover:bg-[#FDE6D2] border-none px-4 py-1.5 font-medium rounded-lg shadow-none">
+                        {salon.remaining}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-gray-700 font-medium text-[15px]">{salon.customers}</TableCell>
+                    <TableCell className="text-gray-700 font-medium text-[15px]">{salon.city}</TableCell>
+                    <TableCell>
+                      <Badge
+                        className={`rounded-lg px-4 py-1.5 font-medium text-[13px] border-none shadow-none ${salon.status === 'Active'
+                          ? 'bg-[#D1EBD9] text-[#2F6B43] hover:bg-[#D1EBD9]'
+                          : 'bg-[#F9D8D8] text-[#D84C4C] hover:bg-[#F9D8D8]'
+                          }`}
+                      >
+                        {salon.status}
+                      </Badge>
+                    </TableCell>
+
+                    {/* Hover View Button Tab */}
+                    <Link href={`/salons-management/view`}><div className="absolute right-0 top-0 bottom-0 w-max hidden group-hover:flex items-center">
+                      <div className="bg-[#A8D5BA] text-gray-800 font-medium px-4 h-full flex items-center cursor-pointer rounded-l-md shadow-lg">
+                        View
+                      </div>
+                    </div></Link>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center text-gray-500">
+                    No salons found matching your criteria.
                   </TableCell>
-                  <TableCell className="text-gray-700 font-medium text-[15px]">{salon.start}</TableCell>
-                  <TableCell className="text-gray-700 font-medium text-[15px]">{salon.expiry}</TableCell>
-                  <TableCell>
-                    <Badge className="bg-[#FDE6D2] text-[#D97706] hover:bg-[#FDE6D2] border-none px-4 py-1.5 font-medium rounded-lg shadow-none">
-                      {salon.remaining}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-gray-700 font-medium text-[15px]">{salon.customers}</TableCell>
-                  <TableCell className="text-gray-700 font-medium text-[15px]">{salon.city}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={`rounded-lg px-4 py-1.5 font-medium text-[13px] border-none shadow-none ${salon.status === 'Active'
-                        ? 'bg-[#D1EBD9] text-[#2F6B43] hover:bg-[#D1EBD9]'
-                        : 'bg-[#F9D8D8] text-[#D84C4C] hover:bg-[#F9D8D8]'
-                        }`}
-                    >
-                      {salon.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="pr-6">
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-600">
-                        <MoreHorizontal className="h-5 w-5" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                  {/* Hover View Button Tab */}
-                  <Link href={`/salons-management/view`}><div className="absolute right-0 top-0 bottom-0 w-max hidden group-hover:flex items-center">
-                    <div className="bg-[#A8D5BA] text-gray-800 font-medium px-4 h-full flex items-center cursor-pointer rounded-l-md shadow-lg">
-                      View
-                    </div>
-                  </div></Link>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </div>
@@ -169,25 +281,54 @@ const SalonsManagement = () => {
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-10">
         <p className="text-sm text-gray-500 order-2 sm:order-1">
-          Showing <span className="font-medium text-gray-700">1</span> to <span className="font-medium text-gray-700">5</span> of <span className="font-medium text-gray-700">42</span> results
+          Showing <span className="font-medium text-gray-700">
+            {filteredSalons.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}
+          </span> to <span className="font-medium text-gray-700">
+            {Math.min(currentPage * itemsPerPage, filteredSalons.length)}
+          </span> of <span className="font-medium text-gray-700">{filteredSalons.length}</span> results
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2 order-1 sm:order-2">
-          <Button variant="outline" className="rounded-lg px-4 border-gray-300 text-gray-600 font-medium">Previous</Button>
+          <Button
+            variant="outline"
+            className="rounded-lg px-4 border-gray-300 text-gray-600 font-medium disabled:opacity-50"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>
           <div className="hidden min-[400px]:flex items-center gap-1 mx-2">
-            <Button className="bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-medium rounded-md w-9 h-9 p-0">1</Button>
-            <Button variant="ghost" className="text-gray-500 font-medium w-9 h-9 p-0">2</Button>
-            <Button variant="ghost" className="text-gray-500 font-medium w-9 h-9 p-0">3</Button>
-            <span className="px-2 text-gray-400">...</span>
-            <Button variant="ghost" className="text-gray-500 font-medium w-9 h-9 p-0">9</Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <Button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={cn(
+                  "font-medium rounded-md w-9 h-9 p-0 transition-colors",
+                  currentPage === page
+                    ? "bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800"
+                    : "bg-transparent text-gray-500 hover:bg-gray-100"
+                )}
+              >
+                {page}
+              </Button>
+            ))}
           </div>
-          <Button variant="outline" className="rounded-lg px-4 border-gray-300 text-gray-600 font-medium">Next</Button>
+          <Button
+            variant="outline"
+            className="rounded-lg px-4 border-gray-300 text-gray-600 font-medium disabled:opacity-50"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages || totalPages === 0}
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
         </div>
       </div>
 
       {/* Add New Salon Modal */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="max-w-[850px] w-[95vw] p-0 border-none bg-[#F5F5F3] overflow-hidden rounded-3xl max-h-[95vh] overflow-y-auto custom-scrollbar">
-          <div className="p-5 sm:p-8 space-y-8">
+        <DialogContent className="max-w-[850px] w-[95vw] p-0 border-none bg-[#F5F5F3] overflow-hidden rounded-3xl max-h-[95vh] flex flex-col">
+          <div className="p-5 sm:p-8 space-y-8 overflow-y-auto flex-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {/* Modal Header */}
             <div className="flex items-start gap-4">
               <div>
@@ -252,30 +393,53 @@ const SalonsManagement = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-gray-700 font-medium text-sm">Start Date</Label>
-                    <div className="relative">
-                      <Input
-                        placeholder="12-12-2025"
-                        className="bg-[#E9E9E7] border-none h-12 rounded-xl pl-10 focus-visible:ring-0"
-                      />
-                      <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><path d="M3 10h18" /><path d="M8 2v4" /><path d="M16 2v4" />
-                      </svg>
-                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full bg-[#E9E9E7] border-none h-12 rounded-xl pl-10 focus:ring-0 text-left font-normal text-gray-500",
+                            !newSalonStartDate && "text-gray-400"
+                          )}
+                        >
+                         
+                          {newSalonStartDate ? format(newSalonStartDate, "PP") : <span>12-12-2025</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={newSalonStartDate}
+                          onSelect={setNewSalonStartDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-gray-700 font-medium text-sm">Expiry Date</Label>
-                    <div className="relative">
-                      <Input
-                        placeholder="12-12-2026"
-                        className="bg-[#E9E9E7] border-none h-12 rounded-xl pl-10 pr-10 focus-visible:ring-0"
-                      />
-                      <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><path d="M3 10h18" /><path d="M8 2v4" /><path d="M16 2v4" />
-                      </svg>
-                      <svg className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    </div>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full bg-[#E9E9E7] border-none h-12 rounded-xl pl-10 focus:ring-0 text-left font-normal text-gray-500",
+                            !newSalonExpiryDate && "text-gray-400"
+                          )}
+                        >
+                          {/* <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" /> */}
+                          {newSalonExpiryDate ? format(newSalonExpiryDate, "PP") : <span>12-12-2026</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={newSalonExpiryDate}
+                          onSelect={setNewSalonExpiryDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
               </div>
@@ -314,7 +478,7 @@ const SalonsManagement = () => {
               </div>
 
               {/* Footer Buttons */}
-              <div className="flex flex-col sm:flex-row justify-end gap-4">
+              <div className="flex flex-col sm:flex-row justify-end gap-4 pb-2">
                 <Button
                   variant="outline"
                   className="w-full sm:w-auto bg-transparent border-[#D45D8A] text-[#D45D8A] hover:bg-[#D45D8A]/10 px-8 py-3 h-auto rounded-xl font-medium order-2 sm:order-1"

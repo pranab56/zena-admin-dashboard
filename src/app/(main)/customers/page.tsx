@@ -49,12 +49,12 @@ const page = () => {
             return (
               <Card
                 key={stat.id}
-                className={stat.bgClass}
+                className={`${stat.bgClass} border-none shadow-sm rounded-[2rem] overflow-hidden transition-all`}
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-700 mb-2">
+                      <p className="text-[12px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">
                         {stat.title}
                       </p>
                       <p className="text-4xl font-bold text-gray-900">
