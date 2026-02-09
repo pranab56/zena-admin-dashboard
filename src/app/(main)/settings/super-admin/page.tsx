@@ -4,7 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Clock, Edit2, Image as ImageIcon, MapPin, X } from 'lucide-react';
+import { Clock, Edit2, Image as ImageIcon, MapPin, Star, X } from 'lucide-react';
 import Image from 'next/image';
 import { ChangeEvent, useState } from 'react';
 
@@ -195,13 +195,22 @@ const SalonProfileSetup = () => {
     <div className="px-4 sm:px-0">
       <div className="">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-xl font-semibold text-gray-800">Salon Profile Setup</h1>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-medium text-[#2D2D2D] mb-1">Salon Profile Setup</h1>
+            <p className="text-sm text-gray-500 font-normal">
+              Manage your salon&apos;s basic information and branding details.
+            </p>
           </div>
-          <p className="text-sm text-gray-600">
-            Manage your salon`&apos;s basic information and branding details.
-          </p>
+          <div className="flex flex-col items-end">
+            <div className="flex items-center gap-2 bg-[#FFF9F6] px-4 py-2 rounded-2xl border border-[#FFE4D6]">
+              <Star className="w-6 h-6 text-[#FFD700] fill-[#FFD700]" />
+              <span className="text-2xl font-bold text-[#2D2D2D]">4.8</span>
+            </div>
+            <p className="text-sm text-gray-400 mt-1 font-normal">
+              Good experience
+            </p>
+          </div>
         </div>
 
         {/* Image Upload Section */}
