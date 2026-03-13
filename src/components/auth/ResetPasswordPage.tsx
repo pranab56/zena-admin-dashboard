@@ -3,8 +3,11 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useForgetPasswordMutation } from '@/features/auth/authApi';
 import { CheckCircle2, Circle, Eye, EyeOff } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 interface ApiError {
   data?: {
@@ -12,14 +15,11 @@ interface ApiError {
   };
 }
 
-
-interface ResetPasswordData {
-  newPassword: string;
-  confirmPassword: string;
-  token: string;
-}
-
 export default function ResetPasswordPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [forgetPassword, { isLoading }] = useForgetPasswordMutation();
+
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
@@ -28,10 +28,23 @@ export default function ResetPasswordPage() {
     newPassword: '',
     confirmPassword: ''
   });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Simulated token - in real app, get from URL params
-  const forgetToken = 'demo-token-12345';
+  // Get and decode values from URL
+  const encodedEmail = searchParams.get('e');
+  const encodedOTP = searchParams.get('o');
+  const encodedHash = searchParams.get('h');
+
+  let email = '';
+  let otp = '';
+  let hashCode = '';
+
+  try {
+    if (encodedEmail) email = atob(encodedEmail);
+    if (encodedOTP) otp = atob(encodedOTP);
+    if (encodedHash) hashCode = atob(encodedHash);
+  } catch (err) {
+    console.error('Failed to decode parameters:', err);
+  }
 
   const validatePassword = (password: string): string => {
     if (!password) {
@@ -72,47 +85,37 @@ export default function ResetPasswordPage() {
 
     // If no errors, proceed with password reset
     if (!newErrors.newPassword && !newErrors.confirmPassword) {
-      if (!forgetToken) {
-        alert('Invalid or missing token. Please try again.');
+      if (!email || !otp || !hashCode) {
+        toast.error('Invalid or missing parameters. Please start again from forgot password page.');
         return;
       }
 
       try {
-        setIsLoading(true);
-
-        const resetData: ResetPasswordData = {
-          newPassword: newPassword,
-          confirmPassword: confirmPassword,
-          token: forgetToken
+        const resetData = {
+          email,
+          otp: parseInt(otp),
+          hash: hashCode,
+          password: newPassword
         };
 
-        console.log('Reset data:', resetData);
+        const response = await forgetPassword(resetData).unwrap();
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        if (response.success) {
+          toast.success('Password reset successful! Redirecting to login...');
 
-        // Your API call would go here
-        // const response = await resetPassword(resetData).unwrap() as ResetPasswordResponse;
+          // Clear form fields
+          setNewPassword('');
+          setConfirmPassword('');
 
-        alert('Password reset successful! Redirecting to login...');
-
-        // Clear form fields
-        setNewPassword('');
-        setConfirmPassword('');
-
-        setIsLoading(false);
-
-        // Redirect to login after a brief delay
-        setTimeout(() => {
-          // router.push('/auth/login');
-          console.log('Redirecting to login...');
-        }, 1500);
-
-      } catch (error) {
-        console.log('Reset password error:', error);
-        const apiError = error as ApiError;
-        alert(apiError?.data?.message || 'Password reset failed!');
-        setIsLoading(false);
+          // Redirect to login
+          setTimeout(() => {
+            router.push('/auth/login');
+          }, 2000);
+        }
+      } catch (err: any) {
+        console.log('Reset password error:', err);
+        const apiError = err as ApiError;
+        toast.error(apiError?.data?.message || 'Password reset failed!');
       }
     }
   };
@@ -246,7 +249,7 @@ export default function ResetPasswordPage() {
             <Button
               type="button"
               onClick={handleSubmit}
-              disabled={isLoading || !isFormValid || !forgetToken}
+              disabled={isLoading || !isFormValid || !email}
               className="w-full bg-green-300 hover:bg-green-400 text-gray-800 font-medium h-12 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-3"
             >
               {isLoading ? 'Changing Password...' : 'Change Password'}

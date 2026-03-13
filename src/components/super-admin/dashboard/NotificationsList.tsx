@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell, Gift } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export interface Notification {
   id: number;
@@ -14,6 +15,7 @@ interface NotificationsListProps {
 }
 
 const NotificationsList = ({ notifications }: NotificationsListProps) => {
+  const { t } = useTranslation();
   const getIconComponent = (iconName: string) => {
     switch (iconName) {
       case 'Gift':
@@ -29,7 +31,7 @@ const NotificationsList = ({ notifications }: NotificationsListProps) => {
     <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden flex flex-col h-full ">
       <CardHeader className="px-6 sm:px-10 py-6 sm:py-8 border-b border-gray-50 bg-[#F9FAFB]/50">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl sm:text-2xl tracking-tight">Latest Notifications</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl tracking-tight">{t('notifications')}</CardTitle>
 
         </div>
       </CardHeader>

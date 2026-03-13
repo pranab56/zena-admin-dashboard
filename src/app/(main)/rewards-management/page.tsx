@@ -4,17 +4,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { useAllRewardQuery, useCreateRewardMutation, useUpdateRewardMutation } from '@/features/admin/reward/rewardApi';
+import { baseURL } from '@/utils/BaseURL';
 import { FilePenLine, ImageIcon, Plus, X } from 'lucide-react';
 import Image from 'next/image';
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, useMemo, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 interface Reward {
-  id: number;
-  name: string;
-  points: number;
+  _id: string;
+  rewardName: string;
+  rewardPoints: number;
   description: string;
-  status: 'active' | 'inactive' | 'disable';
-  image: string | File;
+  rewardStatus: boolean;
+  rewardImage: string;
+  service: string;
+  whatsIncluded: string[];
+  redemptionPolicy: string;
 }
 
 interface FormData {
@@ -27,111 +34,19 @@ interface FormData {
 }
 
 export default function LoyaltyRewards() {
+  const { t } = useTranslation();
+  const { data: apiResponse, isLoading, refetch } = useAllRewardQuery({});
+  const [createReward, { isLoading: isCreating }] = useCreateRewardMutation();
+  const [updateReward, { isLoading: isUpdating }] = useUpdateRewardMutation();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [imagePreview, setImagePreview] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [rewards, setRewards] = useState<Reward[]>([
-    {
-      id: 1,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'active',
-      image: '/images/image2.jpg'
-    },
-    {
-      id: 2,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'active',
-      image: '/images/image2.jpg'
-    },
-    {
-      id: 3,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'inactive',
-      image: '/images/image2.jpg'
-    },
-    {
-      id: 4,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'active',
-      image: '/images/image2.jpg'
-    },
-    {
-      id: 5,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'disable',
-      image: '/images/image2.jpg'
-    },
-    {
-      id: 6,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'active',
-      image: '/images/image2.jpg'
-    },
-    {
-      id: 7,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'inactive',
-      image: '/images/image2.jpg'
-    },
-    {
-      id: 8,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'active',
-      image: '/images/image2.jpg'
-    },
-    {
-      id: 9,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'disable',
-      image: '/images/image2.jpg'
-    },
-    {
-      id: 10,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'disable',
-      image: '/images/image2.jpg'
-    },
-    {
-      id: 11,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'active',
-      image: '/images/image2.jpg'
-    },
-    {
-      id: 12,
-      name: 'Free Signature Haircut',
-      points: 500,
-      description: 'Valid for any stylist tier',
-      status: 'active',
-      image: '/images/image2.jpg'
-    }
-  ]);
+  const rewards = useMemo(() => apiResponse?.data || [], [apiResponse]);
 
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -170,66 +85,72 @@ export default function LoyaltyRewards() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (formData.name && formData.points) {
-      if (isEditMode && editingId) {
-        // Update existing reward
-        setRewards(rewards.map(reward => {
-          if (reward.id === editingId) {
-            return {
-              ...reward,
-              name: formData.name,
-              points: parseInt(formData.points),
-              description: formData.description || 'Valid for any stylist tier',
-              // In a real app, you'd update the image if a new one was uploaded
-            };
-          }
-          return reward;
-        }));
-      } else {
-        // Create new reward
-        const newReward: Reward = {
-          id: rewards.length + 1,
-          name: formData.name,
-          points: parseInt(formData.points),
-          description: formData.description || 'Valid for any stylist tier',
-          status: 'active',
-          image: imagePreview || '/api/placeholder/400/300'
-        };
-        setRewards([...rewards, newReward]);
+      const formDataToSubmit = new FormData();
+      const dataObject = {
+        rewardName: formData.name,
+        rewardPoints: parseInt(formData.points),
+        service: formData.category,
+        description: formData.description,
+        whatsIncluded: formData.included.split('\n').filter(i => i.trim() !== ''),
+        redemptionPolicy: formData.policy,
+      };
+
+      formDataToSubmit.append('data', JSON.stringify(dataObject));
+
+      const file = fileInputRef.current?.files?.[0];
+      if (file) {
+        formDataToSubmit.append('image', file);
       }
 
-      // Reset form
-      setFormData({
-        name: '',
-        points: '',
-        category: '',
-        description: '',
-        included: '',
-        policy: ''
-      });
-      setImagePreview('');
-      setIsEditMode(false);
-      setEditingId(null);
-      setIsModalOpen(false);
+      try {
+        let res;
+        if (isEditMode && editingId) {
+          res = await updateReward({ id: editingId, data: formDataToSubmit }).unwrap();
+          toast.success(t('reward_updated_success', { defaultValue: 'Reward updated successfully' }));
+        } else {
+          res = await createReward(formDataToSubmit).unwrap();
+          toast.success(t('reward_created_success', { defaultValue: 'Reward created successfully' }));
+        }
+
+        if (res.success) {
+          // Reset form
+          setFormData({
+            name: '',
+            points: '',
+            category: '',
+            description: '',
+            included: '',
+            policy: ''
+          });
+          setImagePreview('');
+          setIsEditMode(false);
+          setEditingId(null);
+          setIsModalOpen(false);
+          refetch();
+        }
+      } catch (error: unknown) {
+        const err = error as { data?: { message?: string } };
+        toast.error(err?.data?.message || t('error_general', { defaultValue: 'Something went wrong' }));
+      }
     }
   };
 
   const handleEdit = (reward: Reward) => {
     setIsEditMode(true);
-    setEditingId(reward.id);
+    setEditingId(reward._id);
     setFormData({
-      name: reward.name,
-      points: reward.points.toString(),
-      category: '',
-      description: reward.description,
-      included: '',
-      policy: ''
+      name: reward.rewardName,
+      points: reward.rewardPoints.toString(),
+      category: reward.service || '',
+      description: reward.description || '',
+      included: (reward.whatsIncluded || []).join('\n'),
+      policy: reward.redemptionPolicy || ''
     });
 
-    // If reward.image is a string URL, use it as preview
-    if (typeof reward.image === 'string') {
-      setImagePreview(reward.image);
+    if (reward.rewardImage) {
+      setImagePreview(`${baseURL}${reward.rewardImage}`);
     } else {
       setImagePreview('');
     }
@@ -252,31 +173,28 @@ export default function LoyaltyRewards() {
     setIsModalOpen(false);
   };
 
-  const toggleRewardStatus = (id: number) => {
-    setRewards(rewards.map(reward => {
-      if (reward.id === id) {
-        let newStatus: Reward['status'];
-        if (reward.status === 'active') newStatus = 'disable';
-        else if (reward.status === 'disable') newStatus = 'active';
-        else newStatus = 'active';
-        return { ...reward, status: newStatus };
+  const toggleRewardStatus = async (reward: Reward) => {
+    try {
+      const formDataToSubmit = new FormData();
+      const dataObject = {
+        rewardStatus: !reward.rewardStatus
+      };
+      formDataToSubmit.append('data', JSON.stringify(dataObject));
+
+      const res = await updateReward({ id: reward._id, data: formDataToSubmit }).unwrap();
+      if (res.success) {
+        toast.success(t('reward_status_updated', { status: !reward.rewardStatus ? t('activated', { defaultValue: 'activated' }) : t('deactivated', { defaultValue: 'deactivated' }), defaultValue: `Reward ${!reward.rewardStatus ? 'activated' : 'deactivated'} successfully` }));
+        refetch();
       }
-      return reward;
-    }));
-  };
-
-  const filteredRewards = rewards.filter(reward =>
-    reward.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const getImageUrl = (image: string | File): string => {
-    if (typeof image === 'string') {
-      return image;
-    } else if (image instanceof File) {
-      return URL.createObjectURL(image);
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || 'Failed to update status');
     }
-    return '/api/placeholder/400/300';
   };
+
+  const filteredRewards: Reward[] = rewards.filter((reward: Reward) =>
+    reward.rewardName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="">
@@ -284,8 +202,8 @@ export default function LoyaltyRewards() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="space-y-1">
-            <h1 className="text-xl md:text-2xl font-normal text-gray-800">Loyalty Rewards</h1>
-            <p className="text-xs md:text-sm text-gray-700">Configure and monitor your salon&apos;s reward catalog.</p>
+            <h1 className="text-xl md:text-2xl font-normal text-gray-800">{t('loyalty_rewards')}</h1>
+            <p className="text-xs md:text-sm text-gray-700">{t('loyalty_rewards_desc')}</p>
           </div>
           <Button
             onClick={() => {
@@ -305,86 +223,94 @@ export default function LoyaltyRewards() {
             className="bg-[#7fa885] hover:bg-[#6f9875] text-white h-10 px-6 rounded flex items-center justify-center gap-2 w-full sm:w-auto mt-2 sm:mt-0"
           >
             <Plus className="w-4 h-4" />
-            Create New Reward
+            {t('create_new_reward')}
           </Button>
         </div>
 
         {/* Search */}
-        <div className="mb-6 mt-6 w-full">
+        <div className="mb-6 mt-6 w-full flex items-center gap-4">
           <Input
-            placeholder="Search rewards"
+            placeholder={t('search_rewards')}
             value={searchQuery}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
             className="bg-white border-gray-400 h-10 w-full"
           />
         </div>
 
-        {/* Rewards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 xl:gap-6">
-          {filteredRewards.map((reward) => (
-            <div key={reward.id} className="bg-white rounded-lg overflow-hidden border border-gray-300 flex flex-col h-full shadow-sm">
-              {/* Image */}
-              <div className="relative h-44 sm:h-40 bg-gray-300 shrink-0">
-                <Image
-                  src={getImageUrl(reward.image)}
-                  width={1000}
-                  height={1000}
-                  alt={reward.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 left-2 bg-[#4a4a4a] text-[10px] font-bold text-white px-2 py-1 rounded">
-                  {reward.points} PTS
-                </div>
-                {(reward.status === 'inactive' || reward.status === 'disable') && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <div className="bg-gray-800/80 border border-gray-600 text-white text-[10px] px-3 py-1 rounded uppercase tracking-wider font-bold">
-                      INACTIVE
+        {isLoading ? (
+          <div className="flex items-center justify-center p-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#7fa885]"></div>
+          </div>
+        ) : (
+          <>
+            {/* Rewards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 xl:gap-6">
+              {filteredRewards.map((reward) => (
+                <div key={reward._id} className="bg-white rounded-lg overflow-hidden border border-gray-300 flex flex-col h-full shadow-sm">
+                  {/* Image */}
+                  <div className="relative h-44 sm:h-40 bg-gray-300 shrink-0">
+                    <Image
+                      src={`${baseURL}${reward.rewardImage}`}
+                      width={1000}
+                      height={1000}
+                      alt={reward.rewardName}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-2 start-2 bg-[#4a4a4a] text-[10px] font-bold text-white px-2 py-1 rounded">
+                      {reward.rewardPoints} {t('pts', { defaultValue: 'PTS' })}
+                    </div>
+                    {!reward.rewardStatus && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <div className="bg-gray-800/80 border border-gray-600 text-white text-[10px] px-3 py-1 rounded uppercase tracking-wider font-bold">
+                          {t('inactive')}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-3.5 flex flex-col flex-1">
+                    <h3 className="text-sm font-semibold text-gray-800 mb-1 line-clamp-1">
+                      {reward.rewardName}
+                    </h3>
+                    <p className="text-xs text-slate-500 mb-4 line-clamp-2 flex-1">
+                      {reward.description}
+                    </p>
+
+                    {/* Controls */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[11px] font-medium ${reward.rewardStatus ? 'text-green-600' : 'text-gray-400'}`}>
+                          {reward.rewardStatus ? t('active') : t('inactive')}
+                        </span>
+                        <Switch
+                          checked={reward.rewardStatus}
+                          onCheckedChange={() => toggleRewardStatus(reward)}
+                          className="data-[state=checked]:bg-[#7fa885] scale-90"
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(reward)}
+                        className="h-8 w-8 p-0 hover:bg-gray-100 text-gray-500 hover:text-gray-800"
+                      >
+                        <FilePenLine className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-                )}
-              </div>
-
-              {/* Content */}
-              <div className="p-3.5 flex flex-col flex-1">
-                <h3 className="text-sm font-semibold text-gray-800 mb-1 line-clamp-1">
-                  {reward.name}
-                </h3>
-                <p className="text-xs text-slate-500 mb-4 line-clamp-2 flex-1">
-                  {reward.description}
-                </p>
-
-                {/* Controls */}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[11px] font-medium ${reward.status === 'active' ? 'text-green-600' : 'text-gray-400'}`}>
-                      {reward.status === 'active' ? 'Active' : 'Inactive'}
-                    </span>
-                    <Switch
-                      checked={reward.status === 'active'}
-                      onCheckedChange={() => toggleRewardStatus(reward.id)}
-                      className="data-[state=checked]:bg-[#7fa885] scale-90"
-                    />
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(reward)}
-                    className="h-8 w-8 p-0 hover:bg-gray-100 text-gray-500 hover:text-gray-800"
-                  >
-                    <FilePenLine className="w-4 h-4" />
-                  </Button>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
 
         {/* Create/Edit Reward Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="max-w-3xl w-[95vw] sm:w-full p-4 sm:p-6 max-h-[96vh] overflow-y-auto rounded-xl">
             <DialogHeader className="mb-4">
               <DialogTitle className="text-lg text-gray-800">
-                {isEditMode ? 'Edit Reward' : 'Create New Reward'}
+                {isEditMode ? t('edit_reward') : t('create_new_reward')}
               </DialogTitle>
             </DialogHeader>
 
@@ -406,15 +332,15 @@ export default function LoyaltyRewards() {
                     <div className="absolute inset-0 bg-gray-50 bg-opacity-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                       <div className="text-white text-center">
                         <ImageIcon className="w-8 h-8 mx-auto mb-1" />
-                        <p className="text-sm">Click to change image</p>
+                        <p className="text-sm">{t('click_to_change_image', { defaultValue: 'Click to change image' })}</p>
                       </div>
                     </div>
                   </>
                 ) : (
                   <>
                     <ImageIcon className="w-12 h-12 text-gray-600 mb-2" />
-                    <p className="text-sm text-gray-700">Click to upload reward image</p>
-                    <p className="text-xs text-gray-600 mt-1">PNG, JPG, JPEG up to 5MB</p>
+                    <p className="text-sm text-gray-700">{t('upload_reward_image')}</p>
+                    <p className="text-xs text-gray-600 mt-1">{t('upload_image_hint')}</p>
                   </>
                 )}
               </div>
@@ -425,7 +351,7 @@ export default function LoyaltyRewards() {
                   variant="ghost"
                   size="sm"
                   onClick={clearImage}
-                  className="absolute top-2 right-2 h-8 w-8 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full"
+                  className="absolute top-2 end-2 h-8 w-8 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -444,10 +370,10 @@ export default function LoyaltyRewards() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-sm text-gray-800 mb-2 block">
-                  Reward Name <span className="text-red-500">*</span>
+                  {t('reward_name')} <span className="text-red-500">*</span>
                 </label>
                 <Input
-                  placeholder="Enter your reward name.."
+                  placeholder={t('reward_name_placeholder')}
                   value={formData.name}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('name', e.target.value)}
                   className="bg-white border-gray-400"
@@ -455,10 +381,10 @@ export default function LoyaltyRewards() {
               </div>
               <div>
                 <label className="text-sm text-gray-800 mb-2 block">
-                  Points Required <span className="text-red-500">*</span>
+                  {t('points_required')} <span className="text-red-500">*</span>
                 </label>
                 <Input
-                  placeholder="Enter points"
+                  placeholder={t('points_placeholder')}
                   type="number"
                   value={formData.points}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('points', e.target.value)}
@@ -469,10 +395,10 @@ export default function LoyaltyRewards() {
 
             <div className="mb-4">
               <label className="text-sm text-gray-800 mb-2 block">
-                Reward category <span className="text-red-500">*</span>
+                {t('reward_category')} <span className="text-red-500">*</span>
               </label>
               <Input
-                placeholder="Enter the reward category"
+                placeholder={t('category_placeholder')}
                 value={formData.category}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('category', e.target.value)}
                 className="bg-white border-gray-400"
@@ -481,18 +407,18 @@ export default function LoyaltyRewards() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="text-sm text-gray-800 mb-2 block">Description</label>
+                <label className="text-sm text-gray-800 mb-2 block">{t('description')}</label>
                 <Textarea
-                  placeholder="Enter the description"
+                  placeholder={t('description_placeholder')}
                   value={formData.description}
                   onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleInputChange('description', e.target.value)}
                   className="bg-white border-gray-400 min-h-[120px]"
                 />
               </div>
               <div>
-                <label className="text-sm text-gray-800 mb-2 block">What&apos;s Included</label>
+                <label className="text-sm text-gray-800 mb-2 block">{t('whats_included')}</label>
                 <Textarea
-                  placeholder="Enter the included features"
+                  placeholder={t('included_placeholder')}
                   value={formData.included}
                   onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleInputChange('included', e.target.value)}
                   className="bg-white border-gray-400 min-h-[120px]"
@@ -501,9 +427,9 @@ export default function LoyaltyRewards() {
             </div>
 
             <div className="mb-6">
-              <label className="text-sm text-gray-800 mb-2 block">Redemption Policy</label>
+              <label className="text-sm text-gray-800 mb-2 block">{t('redemption_policy')}</label>
               <Textarea
-                placeholder="Specify any restrictions or specific rules."
+                placeholder={t('policy_placeholder')}
                 value={formData.policy}
                 onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleInputChange('policy', e.target.value)}
                 className="bg-white border-gray-400 min-h-[100px]"
@@ -516,20 +442,21 @@ export default function LoyaltyRewards() {
                 variant="ghost"
                 onClick={handleCancel}
                 className="bg-[#9d9d9d] hover:bg-[#8d8d8d] text-white px-6 order-2 sm:order-1"
+                disabled={isCreating || isUpdating}
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button
                 onClick={handleSave}
                 className="bg-[#7fa885] hover:bg-[#6f9875] text-white px-6 order-1 sm:order-2"
-                disabled={!formData.name || !formData.points}
+                disabled={!formData.name || !formData.points || isCreating || isUpdating}
               >
-                {isEditMode ? 'Update' : 'Save'}
+                {isEditMode ? (isUpdating ? t('updating') : t('update')) : (isCreating ? t('saving') : t('save'))}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </div >
   );
 }

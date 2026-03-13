@@ -1,6 +1,9 @@
+import { logout } from '@/features/auth/authSlice';
 import {
   ChartNoAxesColumnIncreasing,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ChevronUp,
   ClipboardList,
   CreditCard,
@@ -9,15 +12,15 @@ import {
   Grid3x3,
   LayoutDashboard,
   LogOut,
-  Menu,
   Scissors,
   Settings,
-  Users,
-  X
+  Users
 } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 
 // Mock shadcn/ui components with TypeScript
 interface ButtonProps {
@@ -59,7 +62,9 @@ interface ZenaSidebarProps {
 
 // Sidebar Component
 const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: ZenaSidebarProps) => {
+  const { t } = useTranslation();
   const router = useRouter();
+  const dispatch = useDispatch();
   const pathname = usePathname();
   const [role, setRole] = useState<string>(''); // Default role
   const [openSubMenus, setOpenSubMenus] = useState<{ [key: string]: boolean }>({});
@@ -78,26 +83,26 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
     if (isMobileOpen && onCloseMobile) {
       onCloseMobile();
     }
-  }, [pathname]);
+  }, [pathname, isMobileOpen, onCloseMobile]);
 
   const sidebarItems: SidebarItem[] = [
-    { name: "Dashboard", path: "/", icon: LayoutDashboard, allowedRoles: ['salonadmin'] },
-    { name: "Customers", path: "/customers", icon: Users, allowedRoles: ['salonadmin'] },
-    { name: "Visits", path: "/visits", icon: FileText, allowedRoles: ['salonadmin'] },
-    { name: "Rewards Management", path: "/rewards-management", icon: Gift, allowedRoles: ['salonadmin'] },
-    { name: "Redemption Requests", path: "/redemption-requests", icon: CreditCard, allowedRoles: ['salonadmin'] },
-    { name: "Settings", path: "/settings/super-admin", icon: Settings, allowedRoles: ['salonadmin'] },
-    { name: "Overview", path: "/overview", icon: Grid3x3, allowedRoles: ['superadmin'] },
-    { name: "Salons Management", path: "/salons-management", icon: Scissors, allowedRoles: ['superadmin'] },
-    { name: "Analytics", path: "/analytics", icon: ChartNoAxesColumnIncreasing, allowedRoles: ['superadmin'] },
+    { name: t('dashboard'), path: "/", icon: LayoutDashboard, allowedRoles: ['salonadmin', 'ADMIN'] },
+    { name: t('customers'), path: "/customers", icon: Users, allowedRoles: ['salonadmin', 'ADMIN'] },
+    { name: t('visits'), path: "/visits", icon: FileText, allowedRoles: ['salonadmin', 'ADMIN'] },
+    { name: t('rewards_management'), path: "/rewards-management", icon: Gift, allowedRoles: ['salonadmin', 'ADMIN'] },
+    { name: t('redemption_requests'), path: "/redemption-requests", icon: CreditCard, allowedRoles: ['salonadmin', 'ADMIN'] },
+    { name: t('settings'), path: "/settings/super-admin", icon: Settings, allowedRoles: ['salonadmin', 'ADMIN'] },
+    { name: t('overview'), path: "/overview", icon: Grid3x3, allowedRoles: ['superadmin', 'SUPER_ADMIN'] },
+    { name: t('salons_management'), path: "/salons-management", icon: Scissors, allowedRoles: ['superadmin', 'SUPER_ADMIN'] },
+    { name: t('analytics'), path: "/analytics", icon: ChartNoAxesColumnIncreasing, allowedRoles: ['superadmin', 'SUPER_ADMIN'] },
     {
-      name: "Settings",
+      name: t('settings'),
       path: "/settings/admin",
       icon: Settings,
-      allowedRoles: ['superadmin'],
+      allowedRoles: ['superadmin', 'SUPER_ADMIN'],
       subItems: [
-        { name: "System Setting", path: "/settings/admin/system-setting", icon: ClipboardList },
-        { name: "Loyalty Rules", path: "/settings/admin/loyalty-rules", icon: ClipboardList },
+        { name: t('system_setting'), path: "/settings/admin/system-setting", icon: ClipboardList },
+        { name: t('loyalty_rules'), path: "/settings/admin/loyalty-rules", icon: ClipboardList },
       ]
     },
   ];
@@ -137,8 +142,8 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
   };
 
   const handleLogout = () => {
-    // Add your logout logic here
     console.log('Logout');
+    dispatch(logout()); // This clears token from Redux and localStorage via the slice
     localStorage.removeItem('role');
     router.push('/auth/login');
   };
@@ -157,7 +162,7 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
             className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors md:hidden"
             aria-label="Close sidebar"
           >
-            <X size={24} />
+            <ChevronLeft size={24} />
           </button>
         ) : (
           <button
@@ -165,7 +170,7 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
             className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors hidden md:block"
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {isCollapsed ? <Menu size={24} /> : <X size={24} />}
+            {isCollapsed ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
           </button>
         )}
       </div>
@@ -198,15 +203,15 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
                   onClick={() => handleNavigation(item.path, hasSubItems, item.name)}
                   className={`w-full h-12 flex items-center cursor-pointer transition-all duration-200 ${isCollapsed ? 'px-0 justify-center rounded-lg' : 'px-4 rounded-r-full'
                     } ${isItemActive
-                      ? `${isCollapsed ? 'bg-primary' : 'bg-gradient-to-r from-green-200 to-green-300'} text-gray-800 hover:from-green-300 hover:to-green-400 ${!isCollapsed && 'border-l-4 border-pink-400'}`
-                      : `text-gray-600 hover:bg-gray-100 ${!isCollapsed && 'border-l-4 border-transparent'}`
+                      ? `${isCollapsed ? 'bg-primary' : 'bg-gradient-to-r from-green-200 to-green-300'} text-gray-800 hover:from-green-300 hover:to-green-400 ${!isCollapsed && 'border-s-4 border-pink-400'}`
+                      : `text-gray-600 hover:bg-gray-100 ${!isCollapsed && 'border-s-4 border-transparent'}`
                     }`}
                   aria-current={isItemActive ? 'page' : undefined}
                 >
                   <Icon className={`h-5 w-5 shrink-0 ${isItemActive ? 'text-gray-700' : 'text-gray-500'}`} />
                   {!isCollapsed && (
                     <>
-                      <span className={`ml-3 text-[15px] flex-1 text-left ${isItemActive ? 'font-medium' : 'font-normal'}`}>
+                      <span className={`ms-3 text-[15px] flex-1 text-left ${isItemActive ? 'font-medium' : 'font-normal'}`}>
                         {item.name}
                       </span>
                       {hasSubItems && (
@@ -229,7 +234,7 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
 
                 {/* Submenu Items */}
                 {!isCollapsed && hasSubItems && isSubMenuOpen && (
-                  <ul className="mt-1 space-y-1 rounded-lg py-2 px-2 ml-4">
+                  <ul className="mt-1 space-y-1 rounded-lg py-2 px-2 ms-4">
                     {item.subItems!.map((subItem) => {
                       const isSubActive = pathname === subItem.path;
 
@@ -242,7 +247,7 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
                               : 'text-gray-600 hover:bg-green-100'
                               }`}
                           >
-                            <div className={`w-2 h-2 rounded-full mr-3 ${isSubActive ? 'bg-pink-400' : 'bg-gray-400'}`} />
+                            <div className={`w-2 h-2 rounded-full me-3 ${isSubActive ? 'bg-pink-400' : 'bg-gray-400'}`} />
                             <span className="text-[14px]">{subItem.name}</span>
                           </button>
                         </li>
@@ -264,12 +269,12 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
             className={`w-full flex items-center justify-center cursor-pointer bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 text-white rounded-full h-11 shadow-md ${isCollapsed ? 'px-0' : ''
               }`}
           >
-            <LogOut className={`h-4 w-4 ${!isCollapsed && 'mr-2'}`} />
-            {!isCollapsed && 'Logout'}
+            <LogOut className={`h-4 w-4 ${!isCollapsed && 'me-2'}`} />
+            {!isCollapsed && t('logout')}
           </Button>
           {isCollapsed && (
             <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-50">
-              Logout
+              {t('logout')}
             </div>
           )}
         </div>

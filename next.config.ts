@@ -5,23 +5,22 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "images.unsplash.com",
+        hostname: "ui-avatars.com",
         pathname: "/**",
       },
       {
         protocol: "https",
-        hostname: "i.pravatar.cc",
-        pathname: "/**",
-      },
-      {
-        protocol: "http",
-        hostname: "10.10.7.65",
-        port: "5010",
+        hostname: "ismail4000.binarybards.online$",
         pathname: "/**",
       },
       {
         protocol: "https",
-        hostname: "humayon5002.binarybards.online",
+        hostname: "ismail4000.binarybards.online",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "ismail4000.binarybards.onlineimage",
         pathname: "/**",
       },
       {

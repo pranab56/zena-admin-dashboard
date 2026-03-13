@@ -10,10 +10,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useLoginMutation } from '@/features/auth/authApi';
+import { setToken } from '@/features/auth/authSlice';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 
 interface LoginFormData {
   email: string;
@@ -22,8 +27,10 @@ interface LoginFormData {
 }
 
 export default function AdminLoginPage() {
+  const { t } = useTranslation();
   const router = useRouter();
-
+  const dispatch = useDispatch();
+  const [login] = useLoginMutation();
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -49,19 +56,19 @@ export default function AdminLoginPage() {
 
     // Validation
     if (!formData.email) {
-      newErrors.email = 'Email address is required';
+      newErrors.email = t('email_required', { defaultValue: 'Email address is required' });
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = t('email_invalid', { defaultValue: 'Please enter a valid email address' });
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('password_required', { defaultValue: 'Password is required' });
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = t('password_min_length', { defaultValue: 'Password must be at least 6 characters' });
     }
 
     if (!formData.role) {
-      newErrors.role = 'Role is required';
+      newErrors.role = t('role_required', { defaultValue: 'Role is required' });
     }
 
     setErrors(newErrors);
@@ -70,15 +77,24 @@ export default function AdminLoginPage() {
     if (!newErrors.email && !newErrors.password && !newErrors.role) {
       try {
         setIsLoading(true);
-        localStorage.setItem('role', formData.role);
-        if (formData.role === 'superadmin') {
-          router.push('/overview');
-        } else if (formData.role === 'salonadmin') {
-          router.push('/');
+        const response = await login(formData).unwrap();
+
+        if (response.success) {
+          toast.success(response.message || t('login_success', { defaultValue: 'Login successful' }));
+          dispatch(setToken(response.data.accessToken));
+          localStorage.setItem('role', response.data.user.role);
+
+          if (response.data.user.role === 'SUPER_ADMIN') {
+            router.push('/overview');
+          } else {
+            router.push('/');
+          }
         }
-      } catch (error) {
+      } catch (error: unknown) {
+        const err = error as { data?: { message?: string } };
         console.log('Login error:', error);
-        alert('Login failed! Please check your credentials.');
+        toast.error(err?.data?.message || t('login_failed', { defaultValue: 'Login failed! Please check your credentials.' }));
+      } finally {
         setIsLoading(false);
       }
     }
@@ -102,10 +118,10 @@ export default function AdminLoginPage() {
         <div className="w-full max-w-lg px-6 py-8 sm:p-10 rounded-2xl bg-white/80 backdrop-blur-sm shadow-xl">
           {/* Title */}
           <div className="text-center mb-8">
-            <h1 className="text-2xl sm:text-3xl font-semibold text-green-400 mb-2">Welcome!</h1>
-            <h2 className="text-xl sm:text-2xl font-medium text-gray-700 mb-3">to your Admin Dashboard.</h2>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-green-400 mb-2">{t('welcome_title')}</h1>
+            <h2 className="text-xl sm:text-2xl font-medium text-gray-700 mb-3">{t('to_dashboard')}</h2>
             <p className="text-sm text-gray-600 px-2 sm:px-0">
-              Please sign in to access your admin dashboard and manage your platform securely
+              {t('sign_in_desc')}
             </p>
           </div>
 
@@ -114,7 +130,7 @@ export default function AdminLoginPage() {
             {/* Email Field */}
             <div>
               <Label htmlFor="email" className="text-gray-700 font-normal">
-                Email<span className="text-red-500">*</span>
+                {t('email')}<span className="text-red-500">*</span>
               </Label>
               <Input
                 id="email"
@@ -135,7 +151,7 @@ export default function AdminLoginPage() {
 
             <div className='w-full'>
               <Label htmlFor="role" className="text-gray-700 font-normal">
-                Role
+                {t('role')}
               </Label>
               <Select
                 value={formData.role}
@@ -148,11 +164,11 @@ export default function AdminLoginPage() {
                   className={`mt-2 cursor-pointer h-12 py-6 w-full ${errors.role ? 'border-red-500' : 'border-gray-300'
                     } focus:ring-0 focus:ring-green-400`}
                 >
-                  <SelectValue placeholder="Select a role" />
+                  <SelectValue placeholder={t('select_role')} />
                 </SelectTrigger>
                 <SelectContent className=''>
-                  <SelectItem value="salonadmin">Salon Admin</SelectItem>
-                  <SelectItem value="superadmin">Super Admin</SelectItem>
+                  <SelectItem value="ADMIN">{t('admin')}</SelectItem>
+                  <SelectItem value="SUPER_ADMIN">{t('super_admin')}</SelectItem>
                 </SelectContent>
               </Select>
               {errors.role && (
@@ -163,7 +179,7 @@ export default function AdminLoginPage() {
             {/* Password Field */}
             <div>
               <Label htmlFor="password" className="text-gray-700 font-normal">
-                Password<span className="text-red-500">*</span>
+                {t('password')}<span className="text-red-500">*</span>
               </Label>
               <div className="relative mt-2">
                 <Input
@@ -197,7 +213,7 @@ export default function AdminLoginPage() {
                   href="/auth/forgot-password"
                   className="text-sm text-secondary hover:text-pink-600 hover:decoration-2 font-normal"
                 >
-                  Forgot Password?
+                  {t('forgot_password')}
                 </Link>
               </div>
             </div>
@@ -211,7 +227,7 @@ export default function AdminLoginPage() {
               disabled={isLoading || !isFormValid}
               className="w-full bg-green-300 hover:bg-green-400 text-gray-800 font-medium h-12 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-3"
             >
-              {isLoading ? 'Logging in...' : 'Login'}
+              {isLoading ? t('logging_in') : t('login')}
             </Button>
           </form>
         </div>

@@ -1,11 +1,18 @@
 export const saveToken = (token) => {
-  localStorage.setItem("PharmacyAdmin", token);
+  if (typeof window !== "undefined") {
+    localStorage.setItem("PharmacyAdmin", token);
+  }
 };
 
 export const getToken = () => {
-  return localStorage.getItem("PharmacyAdmin");
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("PharmacyAdmin");
+  }
+  return null;
 };
 
 export const removeToken = () => {
-  localStorage.removeItem("PharmacyAdmin");
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("PharmacyAdmin");
+  }
 };

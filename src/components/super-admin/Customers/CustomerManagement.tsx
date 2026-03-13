@@ -15,12 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChevronLeft, ChevronRight, Eye, Star } from 'lucide-react';
+import { useApproveRewardMutation } from '@/features/admin/customarApi/customarApi';
+import { ChevronLeft, ChevronRight, Eye, Footprints, Star } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+
+import { baseURL } from '@/utils/BaseURL';
 
 interface Customer {
-  id: number;
+  id: string | number;
   name: string;
   phone: string;
   points: number;
@@ -34,42 +39,39 @@ interface Customer {
   avatar: string;
 }
 
-const CustomerManagement = () => {
-  // Demo data - customers with additional details
-  const allCustomers: Customer[] = [
-    {
-      id: 1,
-      name: 'Aysha Rahman',
-      phone: '+9876463212',
-      points: 812,
-      visits: 16,
-      referrals: 3,
-      status: 'Active',
-      joinedDate: '12 Oct, 2023',
-      currentBalance: 120,
-      referredBy: 'David Wilson',
-      referredByImage: 'https://i.pravatar.cc/150?img=12',
-      avatar: 'https://i.pravatar.cc/150?img=5'
-    },
-    {
-      id: 2,
-      name: 'Mohammad Ali',
-      phone: '+9876463213',
-      points: 650,
-      visits: 12,
-      referrals: 2,
-      status: 'Inactive',
-      joinedDate: '05 Sep, 2023',
-      currentBalance: 95,
-      referredBy: 'Sarah Ahmed',
-      referredByImage: 'https://i.pravatar.cc/150?img=9',
-      avatar: 'https://i.pravatar.cc/150?img=8'
-    },
-    // ... rest of the customers (truncated for brevity)
-    // Note: Make sure all customers have the same structure as above
-  ];
+interface RawCustomer {
+  _id: string;
+  name?: string;
+  phoneNumber?: string;
+  coins?: number;
+  isOnline?: boolean;
+  image?: string;
+}
 
-  const [customers] = useState<Customer[]>(allCustomers);
+interface CustomerManagementProps {
+  customers?: RawCustomer[];
+}
+
+const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
+  const { t } = useTranslation();
+  // Map API data to Customer format
+  const mappedCustomers: Customer[] = useMemo(() => {
+    return customers.map((c) => ({
+      id: c._id,
+      name: c.name || t('no_name'),
+      phone: c.phoneNumber || t('no_number'),
+      points: c.coins || 0,
+      visits: 0, // Placeholder
+      referrals: 0, // Placeholder
+      status: c.isOnline ? 'Active' : 'Inactive',
+      joinedDate: 'N/A', // Placeholder
+      currentBalance: c.coins || 0,
+      referredBy: 'N/A',
+      referredByImage: `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'U')}&background=random`,
+      avatar: c.image ? `${baseURL}/${c.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'U')}&background=random`
+    }));
+  }, [customers]);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,7 +80,7 @@ const CustomerManagement = () => {
   const itemsPerPage = 5;
 
   // Filter customers
-  const filteredCustomers = customers.filter(customer => {
+  const filteredCustomers = mappedCustomers.filter(customer => {
     const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.phone.includes(searchTerm) ||
       customer.id.toString().includes(searchTerm);
@@ -91,6 +93,8 @@ const CustomerManagement = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
 
+  const [approveReward, { isLoading: isApproving }] = useApproveRewardMutation();
+
   const handleViewCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
     setIsModalOpen(true);
@@ -101,19 +105,33 @@ const CustomerManagement = () => {
     setIsModalOpen(false);
   };
 
+  const handleApprove = async () => {
+    if (!selectedCustomer) return;
+    try {
+      const res = await approveReward(selectedCustomer.id).unwrap();
+      if (res.success) {
+        toast.success(res.message || t('reward_approved_success', { defaultValue: 'Reward approved successfully' }));
+        setIsModalOpen(false);
+      }
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || t('approve_failed', { defaultValue: 'Failed to approve reward' }));
+    }
+  };
+
   return (
     <div className="">
       <div className="">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Customer Management</h1>
-          <p className="text-gray-600 text-sm md:text-base">View and manage all customers, track visits, points, rewards, and loyalty status.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{t('customer_management')}</h1>
+          <p className="text-gray-600 text-sm md:text-base">{t('customer_management_desc')}</p>
         </div>
 
         {/* Search and Filter */}
         <div className="flex flex-col sm:flex-row pb-5 w-full items-center gap-4">
           <Input
-            placeholder="Search name, phone or ID......."
+            placeholder={t('search_customer_placeholder_long')}
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -127,12 +145,12 @@ const CustomerManagement = () => {
               setCurrentPage(1);
             }}>
               <SelectTrigger className="h-12 w-full py-[23px]">
-                <SelectValue placeholder="Search by Status" />
+                <SelectValue placeholder={t('status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="Inactive">Inactive</SelectItem>
+                <SelectItem value="all">{t('all_status')}</SelectItem>
+                <SelectItem value="Active">{t('active')}</SelectItem>
+                <SelectItem value="Inactive">{t('inactive')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -144,13 +162,13 @@ const CustomerManagement = () => {
             <div className="min-w-[1000px]">
               {/* Table Header */}
               <div className="bg-[#EEF8ED] border-b border-green-100 grid grid-cols-7 gap-4 px-6 py-5 font-bold text-gray-700 uppercase text-[11px] tracking-wider">
-                <div>Name</div>
-                <div>Phone Number</div>
-                <div>Total Points</div>
-                <div>Total Visits</div>
-                <div>Referral Count</div>
-                <div>Status</div>
-                <div className="text-right pr-4">Actions</div>
+                <div>{t('name')}</div>
+                <div>{t('phone_number')}</div>
+                <div>{t('total_points')}</div>
+                <div>{t('total_visits')}</div>
+                <div>{t('referral_count')}</div>
+                <div>{t('status')}</div>
+                <div className="text-right pe-4">{t('actions')}</div>
               </div>
 
               {/* Table Body */}
@@ -172,10 +190,18 @@ const CustomerManagement = () => {
                           : 'bg-gray-100 text-gray-500'
                           }`}
                       >
-                        {customer.status}
+                        {customer.status === 'Active' ? t('active') : t('inactive')}
                       </span>
                     </div>
-                    <div className="flex items-center justify-end gap-2 pr-4">
+                    <div className="flex items-center justify-end gap-2 pe-4">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 text-gray-400 hover:text-blue-400 transition-colors bg-white shadow-sm border border-gray-100"
+                        onClick={() => window.open(`http://10.10.7.37:3000/visits?userId=${customer.id}`, '_blank')}
+                      >
+                        <Footprints className="h-5 w-5" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -200,7 +226,7 @@ const CustomerManagement = () => {
                 className="gap-1 rounded-lg border-gray-200"
               >
                 <ChevronLeft className="h-4 w-4" />
-                Previous
+                {t('previous')}
               </Button>
 
               <div className="flex flex-wrap items-center justify-center gap-2">
@@ -240,7 +266,7 @@ const CustomerManagement = () => {
                 disabled={currentPage === totalPages}
                 className="gap-1 rounded-lg bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 border-none font-medium px-4 h-9 shadow-none"
               >
-                Next
+                {t('next')}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -249,7 +275,7 @@ const CustomerManagement = () => {
 
         {/* Results Info */}
         <div className="mt-4 text-sm text-gray-600 text-center">
-          Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredCustomers.length)} of {filteredCustomers.length} customers
+          {t('showing_results', { start: startIndex + 1, end: Math.min(startIndex + itemsPerPage, filteredCustomers.length), total: filteredCustomers.length, defaultValue: `Showing ${startIndex + 1} to ${Math.min(startIndex + itemsPerPage, filteredCustomers.length)} of ${filteredCustomers.length} customers` })}
         </div>
       </div>
 
@@ -258,7 +284,7 @@ const CustomerManagement = () => {
         <DialogContent className="max-w-3xl p-0 gap-0 max-h-[96vh] flex flex-col overflow-hidden border-none shadow-2xl rounded-3xl">
           <DialogHeader className="p-6 pb-4 shrink-0 bg-white border-b border-gray-50">
             <DialogTitle className="text-2xl font-bold text-gray-900">
-              Customer Details
+              {t('customer_details')}
             </DialogTitle>
           </DialogHeader>
 
@@ -278,7 +304,7 @@ const CustomerManagement = () => {
                           alt={selectedCustomer.name}
                           className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-white shadow-xl"
                         />
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 border-2 border-white rounded-full" />
+                        <div className="absolute -bottom-1 -end-1 w-6 h-6 bg-green-500 border-2 border-white rounded-full" />
                       </div>
                       <div className="space-y-1.5 md:space-y-2">
                         <div className="flex flex-wrap items-center gap-3">
@@ -286,11 +312,11 @@ const CustomerManagement = () => {
                             {selectedCustomer.name}
                           </h3>
                           <Badge className="bg-[#D1EBD9] text-[#2F6B43] hover:bg-[#D1EBD9] border-none px-3 font-medium rounded-full shadow-none text-xs">
-                            {selectedCustomer.status}
+                            {selectedCustomer.status === 'Active' ? t('active') : t('inactive')}
                           </Badge>
                         </div>
                         <p className="text-gray-500 text-sm md:text-[15px] font-medium leading-none">
-                          Joined in {selectedCustomer.joinedDate}
+                          {t('joined_in', { date: selectedCustomer.joinedDate })}
                         </p>
                         <p className="text-gray-700 font-semibold text-sm md:text-base">
                           {selectedCustomer.phone}
@@ -301,7 +327,7 @@ const CustomerManagement = () => {
                     {/* Referred By Card */}
                     <div className="bg-white/80 backdrop-blur-sm shadow-sm border border-white rounded-2xl p-4 w-full lg:w-auto">
                       <p className="text-[11px] text-gray-400 font-bold mb-3 tracking-widest uppercase">
-                        REFERRED BY
+                        {t('referred_by')}
                       </p>
                       <div className="flex items-center gap-3">
                         <Image
@@ -327,17 +353,17 @@ const CustomerManagement = () => {
                   <Card className="border-none bg-[#F5F5F3] rounded-2xl shadow-none">
                     <CardContent className="p-6">
                       <h4 className="text-[13px] text-gray-400 font-bold mb-6 tracking-widest uppercase">
-                        LIFETIME VALUE
+                        {t('lifetime_value')}
                       </h4>
                       <div className="flex justify-between items-end">
                         <div>
-                          <p className="text-gray-400 text-xs font-bold mb-1 uppercase tracking-wider">Total Visits</p>
+                          <p className="text-gray-400 text-xs font-bold mb-1 uppercase tracking-wider">{t('total_visits')}</p>
                           <p className="text-3xl md:text-4xl font-bold text-gray-800 leading-none">
                             {selectedCustomer.visits}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-gray-400 text-xs font-bold mb-1 uppercase tracking-wider">Referral Count</p>
+                          <p className="text-gray-400 text-xs font-bold mb-1 uppercase tracking-wider">{t('referral_count')}</p>
                           <p className="text-3xl md:text-4xl font-bold text-gray-800 leading-none">
                             {selectedCustomer.referrals}
                           </p>
@@ -350,7 +376,7 @@ const CustomerManagement = () => {
                   <Card className="border-none bg-[#F5F5F3] rounded-2xl shadow-none">
                     <CardContent className="p-6">
                       <h4 className="text-[13px] text-gray-400 font-bold mb-6 tracking-widest uppercase">
-                        CURRENT BALANCE
+                        {t('current_balance')}
                       </h4>
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl shadow-sm flex items-center justify-center">
@@ -360,19 +386,27 @@ const CustomerManagement = () => {
                           <span className="text-3xl md:text-4xl font-bold text-[#D45D8A] leading-none">
                             {selectedCustomer.currentBalance}
                           </span>
-                          <span className="text-sm md:text-base font-bold text-gray-400 uppercase tracking-wider leading-none">points</span>
+                          <span className="text-sm md:text-base font-bold text-gray-400 uppercase tracking-wider leading-none">{t('pts')}</span>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
 
-                <div className="flex justify-center pt-6 pb-2">
+                <div className="flex flex-col sm:flex-row justify-center gap-4 pt-6 pb-2">
                   <Button
-                    onClick={handleBanCustomer}
+                    onClick={handleApprove}
+                    disabled={isApproving}
                     className="bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-bold text-lg px-12 md:px-20 py-6 rounded-2xl w-full sm:w-auto min-w-[200px] shadow-none"
                   >
-                    BAN
+                    {isApproving ? t('approving') : t('approve')}
+                  </Button>
+                  <Button
+                    onClick={handleBanCustomer}
+                    variant="outline"
+                    className="border-[#D45D8A] text-[#D45D8A] hover:bg-[#D45D8A] hover:text-white font-bold text-lg px-12 md:px-20 py-6 rounded-2xl w-full sm:w-auto min-w-[200px] shadow-none"
+                  >
+                    {t('ban')}
                   </Button>
                 </div>
               </div>

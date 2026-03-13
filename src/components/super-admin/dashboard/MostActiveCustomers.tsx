@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { useTranslation } from 'react-i18next'
 
 interface Customer {
   id: string
@@ -37,7 +38,13 @@ const customersData: Customer[] = [
 
 ]
 
-export default function MostActiveCustomers() {
+interface MostActiveCustomersProps {
+  customers?: Customer[];
+}
+
+export default function MostActiveCustomers({ customers = [] }: MostActiveCustomersProps) {
+  const { t } = useTranslation();
+  const displayData = customers.length > 0 ? customers : customersData;
   return (
     <div className="w-full h-full">
       <Card className="border-none shadow-sm rounded-2xl bg-white h-full flex flex-col">
@@ -45,18 +52,15 @@ export default function MostActiveCustomers() {
         <div className="px-6 sm:px-10 border-b border-gray-200">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 sm:py-0 sm:pb-3 gap-2">
             <h2 className="text-lg sm:text-xl font-black text-gray-900 uppercase tracking-tight">
-              Elite Customers
+              {t('most_active_customers')}
             </h2>
-            <Badge className="bg-[#EEF8ED] text-[#2F6B43] border-none px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full">
-              Live Ranking
-            </Badge>
           </div>
         </div>
 
         {/* Customer List */}
         <div className="flex-1 custom-scrollbar">
           <div className="px-4">
-            {customersData.map((customer, index) => (
+            {displayData.map((customer, index) => (
               <div
                 key={customer.id}
                 className="flex items-center justify-between p-4 rounded-3xl transition-all duration-300 hover:bg-gray-50 group border border-transparent hover:border-gray-100"
@@ -74,7 +78,7 @@ export default function MostActiveCustomers() {
                         {customer.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute -top-1 -left-1 w-6 h-6 bg-[#A8D5BA] text-white text-[10px] font-medium rounded-lg flex items-center justify-center shadow-md">
+                    <div className="absolute -top-1 -start-1 w-6 h-6 bg-[#A8D5BA] text-white text-[10px] font-medium rounded-lg flex items-center justify-center shadow-md">
                       #{index + 1}
                     </div>
                   </div>
@@ -85,10 +89,10 @@ export default function MostActiveCustomers() {
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">
-                        Engagement:
+                        {t('engagement', { defaultValue: 'Engagement:' })}
                       </span>
                       <span className="text-sm font-bold text-gray-500">
-                        {customer.visits} visits
+                        {customer.visits} {t('visits')}
                       </span>
                     </div>
                   </div>
@@ -96,7 +100,7 @@ export default function MostActiveCustomers() {
 
                 {/* Right side - Points Badge */}
                 <div className="flex flex-col items-end gap-1">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Yield</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">{t('yield', { defaultValue: 'Yield' })}</span>
                   <Badge className="bg-[#A8D5BA] text-[#2F6B43] px-5 py-2 rounded-2xl text-xs font-black border-0 shadow-lg shadow-gray-100 transition-all hover:translate-y-[-2px]">
                     {customer.points} PTS
                   </Badge>

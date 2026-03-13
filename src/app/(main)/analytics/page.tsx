@@ -36,6 +36,7 @@ import {
   User
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface Salon {
   id: number;
@@ -69,25 +70,8 @@ const serviceUsageRanking = [
   { name: "Manicure", bookings: 1234, progress: 20 },
 ];
 
-const revenueData = [
-  { day: "1.01", value: 1240 },
-  { day: "1.02", value: 1210 },
-  { day: "1.03", value: 1270 },
-  { day: "1.04", value: 1230 },
-  { day: "1.05", value: 1260 },
-  { day: "1.06", value: 1280 },
-  { day: "1.07", value: 1250 },
-  { day: "1.08", value: 1260 },
-  { day: "1.09", value: 1230 },
-  { day: "1.10", value: 1240 },
-  { day: "1.11", value: 1270 },
-  { day: "1.12", value: 1260 },
-  { day: "1.13", value: 1240 },
-  { day: "1.14", value: 1250 },
-  { day: "1.15", value: 1240 },
-];
-
 export default function Analytics() {
+  const { t } = useTranslation();
   const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -124,17 +108,17 @@ export default function Analytics() {
     <div className="space-y-8">
       {/* Header Section */}
       <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-800">Deep Drive Business Analytics</h1>
-        <p className="text-gray-500 mt-1">Real time performance metrics across all salon locations and service trends.</p>
+        <h1 className="text-2xl font-bold text-gray-800">{t('business_analytics')}</h1>
+        <p className="text-gray-500 mt-1">{t('business_analytics_desc')}</p>
       </div>
 
       {/* Filters Section */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute start-3 top-1/2 -transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
-            placeholder="Search by salon name, city ..."
-            className="pl-10 h-12 border-gray-200 rounded-lg bg-white focus-visible:ring-0"
+            placeholder={t('search_analytics_placeholder')}
+            className="ps-10 h-12 border-gray-200 rounded-lg bg-white focus-visible:ring-0"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -148,13 +132,13 @@ export default function Analytics() {
             setCurrentPage(1);
           }}>
             <SelectTrigger className="w-full h-12 border-gray-200 py-[23px] rounded-lg bg-white text-gray-500 focus:ring-0">
-              <SelectValue placeholder="Search by Status" />
+              <SelectValue placeholder={t('status')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="High Performing">High Performing</SelectItem>
-              <SelectItem value="Average">Average</SelectItem>
-              <SelectItem value="Low Performing">Low Performing</SelectItem>
+              <SelectItem value="all">{t('all_status')}</SelectItem>
+              <SelectItem value="High Performing">{t('high_performing')}</SelectItem>
+              <SelectItem value="Average">{t('average')}</SelectItem>
+              <SelectItem value="Low Performing">{t('low_performing')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -165,13 +149,13 @@ export default function Analytics() {
         <Table>
           <TableHeader className="bg-[#F1F8F1]">
             <TableRow className="hover:bg-transparent border-none">
-              <TableHead className="py-4 font-semibold text-[#828282]">SALON NAME</TableHead>
-              <TableHead className="py-4 font-semibold text-[#828282]">CITY</TableHead>
-              <TableHead className="py-4 font-semibold text-[#828282]">TOTAL VISITS</TableHead>
-              <TableHead className="py-4 font-semibold text-[#828282]">CUTOMERS COUNT</TableHead>
-              <TableHead className="py-4 font-semibold text-[#828282]">POINTS</TableHead>
-              <TableHead className="py-4 font-semibold text-[#828282]">STATUS</TableHead>
-              <TableHead className="py-4 font-semibold text-[#828282]">Action</TableHead>
+              <TableHead className="py-4 font-semibold text-start text-[#828282]">{t('salon_name_header')}</TableHead>
+              <TableHead className="py-4 font-semibold text-start text-[#828282]">{t('city')}</TableHead>
+              <TableHead className="py-4 font-semibold text-start text-[#828282]">{t('total_visits')}</TableHead>
+              <TableHead className="py-4 font-semibold text-start text-[#828282]">{t('customers_count_header')}</TableHead>
+              <TableHead className="py-4 font-semibold text-start text-[#828282]">{t('points_header')}</TableHead>
+              <TableHead className="py-4 font-semibold text-start text-[#828282]">{t('status')}</TableHead>
+              <TableHead className="py-4 font-semibold text-start text-[#828282]">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -190,7 +174,7 @@ export default function Analytics() {
                         salon.status === "Average" ? "bg-[#FFF4E5] text-[#B76E00] hover:bg-[#FFF4E5]" :
                           "bg-[#FFEBEE] text-[#C62828] hover:bg-[#FFEBEE]"
                     )}>
-                      {salon.status}
+                      {salon.status === "High Performing" ? t('high_performing') : salon.status === "Average" ? t('average') : t('low_performing')}
                     </Badge>
                   </TableCell>
                   <TableCell className="py-4">
@@ -202,18 +186,18 @@ export default function Analytics() {
                           className="text-[#A8D5BA] hover:text-[#82C09A] hover:bg-[#F1F8F1] font-medium"
                           onClick={() => setSelectedSalon(salon)}
                         >
-                          View
+                          {t('view_details')}
                         </Button>
                       </SheetTrigger>
 
                       {/* Sheet Content Implementation */}
                       <SheetContent className="sm:max-w-md overflow-y-auto px-4">
-                        <SheetHeader className="text-left space-y-0  px-2">
+                        <SheetHeader className="text-start space-y-0  px-2">
                           <SheetTitle className="text-2xl font-bold bg-white text-gray-800">
                             {selectedSalon?.name || "Elite Hair & Spa"}
                           </SheetTitle>
                           <p className="text-gray-500 font-medium">
-                            {selectedSalon?.city || "New York"} - {selectedSalon?.status || "High Performing"}
+                            {selectedSalon?.city || ""} - {selectedSalon?.status === "High Performing" ? t('high_performing') : selectedSalon?.status === "Average" ? t('average') : t('low_performing')}
                           </p>
                         </SheetHeader>
 
@@ -222,25 +206,25 @@ export default function Analytics() {
                           <div className="grid grid-cols-4 gap-3">
                             <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
                               <p className="text-xl font-bold">$1,240</p>
-                              <p className="text-[10px] text-gray-400 leading-tight">Monthly Visit Freq.</p>
+                              <p className="text-[10px] text-gray-400 leading-tight">{t('monthly_visit_freq')}</p>
                             </div>
                             <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
                               <p className="text-xl font-bold">$1,440</p>
-                              <p className="text-[10px] text-gray-400 leading-tight">Monthly Avg. Visit Freq.</p>
+                              <p className="text-[10px] text-gray-400 leading-tight">{t('monthly_avg_visit_freq')}</p>
                             </div>
                             <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
                               <p className="text-xl font-bold">$32,100</p>
-                              <p className="text-[10px] text-gray-400 leading-tight">Avg. Monthly Revenue</p>
+                              <p className="text-[10px] text-gray-400 leading-tight">{t('avg_monthly_revenue')}</p>
                             </div>
                             <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
                               <p className="text-xl font-bold">420</p>
-                              <p className="text-[10px] text-gray-400 leading-tight">Customers in last 30 days</p>
+                              <p className="text-[10px] text-gray-400 leading-tight">{t('customers_last_30_days')}</p>
                             </div>
                           </div>
 
                           {/* Revenue Chart - Custom implementation to match visual */}
                           <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-gray-800">Daily Revenue <span className="text-gray-400 font-normal">(Last 30 Days)</span></h3>
+                            <h3 className="text-sm font-semibold text-gray-800">{t('daily_revenue')} <span className="text-gray-400 font-normal">{t('last_30_days')}</span></h3>
                             <div className="h-32 flex items-end gap-1.5 px-2">
                               {[40, 60, 50, 80, 55, 65, 75, 90, 60, 65, 55, 78, 85, 60, 65, 70].map((h, i) => (
                                 <div
@@ -265,7 +249,7 @@ export default function Analytics() {
 
                           {/* Top Performing Service Overview */}
                           <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-gray-800">Top Performing Service Overview</h3>
+                            <h3 className="text-sm font-semibold text-gray-800">{t('top_performing_service')}</h3>
                             <div className="space-y-4">
                               {[
                                 { label: 'Haircut', val: 40 },
@@ -274,7 +258,7 @@ export default function Analytics() {
                                 { label: 'Facial', val: 10 }
                               ].map((item) => (
                                 <div key={item.label} className="flex items-center gap-4">
-                                  <span className="text-sm text-gray-600 w-20">{item.label}</span>
+                                  <span className="text-sm text-gray-600 w-20">{t(item.label.toLowerCase().replace(/ /g, '_'))}</span>
                                   <div className="flex-1 h-2 bg-gray-50 rounded-full overflow-hidden">
                                     <div
                                       className="h-full bg-[#A8D5BA] rounded-full"
@@ -289,25 +273,25 @@ export default function Analytics() {
 
                           {/* Insights */}
                           <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-gray-800">Insights</h3>
+                            <h3 className="text-sm font-semibold text-gray-800">{t('insights')}</h3>
                             <div className="space-y-4">
                               <div className="flex items-center gap-3">
                                 <div className="p-2 border border-gray-100 rounded-lg">
                                   <Calendar className="w-4 h-4 text-gray-400" />
                                 </div>
-                                <p className="text-sm text-gray-600">Best day: <span className="font-bold text-gray-800">Friday</span></p>
+                                <p className="text-sm text-gray-600">{t('best_day')} <span className="font-bold text-gray-800">{t('friday')}</span></p>
                               </div>
                               <div className="flex items-center gap-3">
                                 <div className="p-2 border border-gray-100 rounded-lg">
                                   <Clock className="w-4 h-4 text-gray-400" />
                                 </div>
-                                <p className="text-sm text-gray-600">Slowest day: <span className="font-bold text-gray-800">Monday</span></p>
+                                <p className="text-sm text-gray-600">{t('slowest_day')} <span className="font-bold text-gray-800">{t('monday')}</span></p>
                               </div>
                               <div className="flex items-center gap-3">
                                 <div className="p-2 border border-gray-100 rounded-lg">
                                   <User className="w-4 h-4 text-gray-400" />
                                 </div>
-                                <p className="text-sm text-gray-600 font-medium">Avg: Customer Spend</p>
+                                <p className="text-sm text-gray-600 font-medium">{t('avg_customer_spend')}</p>
                               </div>
                             </div>
                           </div>
@@ -315,10 +299,10 @@ export default function Analytics() {
                           {/* Actions */}
                           <div className="flex gap-4 pt-4 pb-8">
                             <Button variant="outline" className="flex-1 h-12 rounded-xl border-gray-200">
-                              Export PDF
+                              {t('export_pdf')}
                             </Button>
                             <Button className="flex-1 h-12 rounded-xl bg-[#A8D5BA] hover:bg-[#82C09A] border-none text-gray-800 shadow-none">
-                              Open Full Report
+                              {t('open_full_report')}
                             </Button>
                           </div>
                         </div>
@@ -330,7 +314,7 @@ export default function Analytics() {
             ) : (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center text-gray-500">
-                  No data found matching your criteria.
+                  {t('no_data')}
                 </TableCell>
               </TableRow>
             )}
@@ -340,7 +324,7 @@ export default function Analytics() {
         {/* Pagination Section */}
         <div className="p-4 border-t border-gray-50 flex items-center justify-between">
           <p className="text-sm text-gray-500">
-            Showing <span className="font-medium">{filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to {Math.min(currentPage * itemsPerPage, filteredData.length)}</span> of <span className="font-medium">{filteredData.length}</span> results
+            {t('showing_results', { start: filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0, end: Math.min(currentPage * itemsPerPage, filteredData.length), total: filteredData.length, defaultValue: `Showing ${filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to ${Math.min(currentPage * itemsPerPage, filteredData.length)} of ${filteredData.length} results` })}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -349,8 +333,8 @@ export default function Analytics() {
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Previous
+              <ChevronLeft className="h-4 w-4 ms-1" />
+              {t('previous')}
             </Button>
             <div className="flex gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -375,24 +359,24 @@ export default function Analytics() {
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages || totalPages === 0}
             >
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
+              {t('next')}
+              <ChevronRight className="h-4 w-4 me-1" />
             </Button>
           </div>
         </div>
       </div>
 
       {/* Service Ranking Card Section */}
-      <Card className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
-        <h2 className="text-lg font-bold text-gray-800">Top Service Usage Ranking</h2>
-        <p className="text-sm text-gray-400 mb-6">Frequency of service across all branches</p>
+      <Card className="p-6 bg-white border border-gray-100 shadow-sm rounded-xl text-start">
+        <h2 className="text-lg font-bold text-gray-800">{t('top_service_ranking')}</h2>
+        <p className="text-sm text-gray-400 mb-6">{t('frequency_all_branches')}</p>
 
         <div className="space-y-6">
           {serviceUsageRanking.map((service) => (
             <div key={service.name} className="space-y-2">
               <div className="flex justify-between items-center text-sm">
-                <span className="font-medium text-gray-700">{service.name}</span>
-                <span className="text-gray-400">{service.bookings} bookings</span>
+                <span className="font-medium text-gray-700">{t(service.name.toLowerCase().replace(/[\/ ]/g, '_'))}</span>
+                <span className="text-gray-400">{t('bookings_count', { count: service.bookings })}</span>
               </div>
               <div className="h-2 w-full bg-[#F5F5F5] rounded-full overflow-hidden">
                 <div

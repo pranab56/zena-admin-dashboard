@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslation } from 'react-i18next';
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface VisitsData {
@@ -22,33 +23,23 @@ interface CustomTooltipProps {
 }
 
 const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+  const { t } = useTranslation();
   if (active && payload && payload.length) {
     return (
       <div className="bg-gray-900 text-white px-3 py-2 rounded-lg text-sm">
-        Total Visits {(payload[0].value / 1000).toFixed(1)}k
+        {t('total_visits')} {payload[0].value}
       </div>
     );
   }
   return null;
 };
 
-// Alternative: Using Recharts' built-in TooltipProps type
-// const CustomTooltip = ({ active, payload }: TooltipProps<ValueType, NameType>) => {
-//   if (active && payload && payload.length) {
-//     return (
-//       <div className="bg-gray-900 text-white px-3 py-2 rounded-lg text-sm">
-//         Total Visits {(Number(payload[0].value) / 1000).toFixed(1)}k
-//       </div>
-//     );
-//   }
-//   return null;
-// };
-
 const VisitsTrendChart = ({ visitsData, highlightedMonth }: VisitsTrendChartProps) => {
+  const { t } = useTranslation();
   return (
     <Card className="border-0 shadow">
       <CardHeader className="p-5 sm:p-6">
-        <CardTitle className="text-xl sm:text-2xl font-serif">Visits Trend Chart</CardTitle>
+        <CardTitle className="text-xl sm:text-2xl font-serif">{t('visits_trend')}</CardTitle>
       </CardHeader>
       <CardContent className="p-2 sm:p-6">
         <div className="h-[250px] sm:h-[300px] w-full">
@@ -65,7 +56,6 @@ const VisitsTrendChart = ({ visitsData, highlightedMonth }: VisitsTrendChartProp
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: '#6B7280', fontSize: 12 }}
-                tickFormatter={(value) => `${value / 1000}k`}
               />
               <Tooltip content={<CustomTooltip />} cursor={false} />
               <Bar dataKey="visits" radius={[8, 8, 0, 0]}>

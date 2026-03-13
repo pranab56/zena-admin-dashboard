@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslation } from 'react-i18next';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, TooltipProps } from 'recharts';
 
 interface PointsData {
@@ -28,6 +29,7 @@ interface CustomTooltipProps extends TooltipProps<number, string> {
 }
 
 const PointsPieChart = ({ pointsData }: PointsPieChartProps) => {
+  const { t } = useTranslation();
   const total = pointsData.reduce((sum, item) => sum + item.value, 0);
 
   const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
@@ -36,7 +38,7 @@ const PointsPieChart = ({ pointsData }: PointsPieChartProps) => {
         <div className="bg-white/80 backdrop-blur-md px-4 py-3 rounded-2xl shadow-xl border border-white/50">
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{payload[0].name}</p>
           <p className="text-lg font-black text-gray-900">
-            {payload[0].value.toLocaleString()} PTS
+            {payload[0].value.toLocaleString()} {t('pts', { defaultValue: 'PTS' })}
           </p>
         </div>
       );
@@ -47,7 +49,7 @@ const PointsPieChart = ({ pointsData }: PointsPieChartProps) => {
   return (
     <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden flex flex-col h-full">
       <CardHeader className="px-6 sm:px-10 py-6 sm:py-8 border-b border-gray-50 bg-[#F9FAFB]/50">
-        <CardTitle className="text-xl sm:text-2xl tracking-tight">Points Earned vs Redeemed</CardTitle>
+        <CardTitle className="text-xl sm:text-2xl tracking-tight">{t('points_distribution')}</CardTitle>
       </CardHeader>
       <CardContent className="p-6 sm:p-10 flex-1 flex items-center justify-center">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-12 w-full">
@@ -78,8 +80,8 @@ const PointsPieChart = ({ pointsData }: PointsPieChartProps) => {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-              <div className="text-3xl font-black text-gray-900 leading-none group-hover:scale-110 transition-transform">{(total / 1000).toFixed(1)}k</div>
-              <div className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-2">Aggregate</div>
+              <div className="text-3xl font-black text-gray-900 leading-none group-hover:scale-110 transition-transform">{total.toLocaleString()}</div>
+              <div className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-2">{t('aggregate', { defaultValue: 'Aggregate' })}</div>
             </div>
           </div>
           <div className="flex flex-row lg:flex-col gap-6 flex-wrap justify-center">
@@ -93,7 +95,7 @@ const PointsPieChart = ({ pointsData }: PointsPieChartProps) => {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest leading-none mb-1">{entry.name}</span>
-                  <span className="text-lg font-black text-gray-700 leading-none">{(entry.value / 1000).toFixed(1)}k</span>
+                  <span className="text-lg font-black text-gray-700 leading-none">{entry.value.toLocaleString()}</span>
                 </div>
               </div>
             ))}

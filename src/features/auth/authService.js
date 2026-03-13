@@ -1,14 +1,21 @@
 export const saveToken = (token) => {
-  localStorage.setItem("drebalAdmin", token);
+  if (typeof window !== "undefined") {
+    localStorage.setItem("drebalAdmin", token);
+  }
 };
 
 export const getToken = () => {
-  return localStorage.getItem("drebalAdmin");
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("drebalAdmin");
+  }
+  return null;
 };
 
 export const removeToken = () => {
-  localStorage.removeItem("drebalAdmin");
-  localStorage.removeItem("adminLoginId");
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("drebalAdmin");
+    localStorage.removeItem("adminLoginId");
+  }
 };
 
 export const isAuthenticated = () => {

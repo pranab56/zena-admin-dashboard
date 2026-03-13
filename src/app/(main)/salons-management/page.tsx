@@ -29,8 +29,10 @@ import { format, parse } from "date-fns";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from 'next/link';
 import { useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 
 const SalonsManagement = () => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [startDate, setStartDate] = useState<Date>();
@@ -47,25 +49,25 @@ const SalonsManagement = () => {
   const [newSalonExpiryDate, setNewSalonExpiryDate] = useState<Date>();
 
   const stats = [
-    { label: "ACTIVE SALONS", value: "24", bg: "bg-[#F5F5F3]" },
-    { label: "TOTALECOSYSTEM CUSTOMERS", value: "12,400", bg: "bg-[#F5F5F3]" },
-    { label: "EXPIRING SOON", value: "04", bg: "bg-[#F5F5F3]", valueColor: "text-[#D97706]" },
-  ];
-
-  const salons = [
-    { id: "SLN-9921", name: "Elite Hair & Spa", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Expired" },
-    { id: "SLN-9922", name: "Luxe Salon", start: "01-15-2025", expiry: "01-15-2026", remaining: "Expiring with 15 days", customers: "850", city: "Abu Dhabi", status: "Expired" },
-    { id: "SLN-9923", name: "Bella Spa", start: "05-20-2025", expiry: "05-20-2026", remaining: "320 days left", customers: "2100", city: "Sharjah", status: "Active" },
-    { id: "SLN-9924", name: "Glow Parlour", start: "03-10-2025", expiry: "03-10-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
-    { id: "SLN-9925", name: "Modern Cuts", start: "08-01-2025", expiry: "08-01-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
-    { id: "SLN-9926", name: "Royal Wellness", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Expired" },
-    { id: "SLN-9927", name: "Urban Chic", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
-    { id: "SLN-9928", name: "The Grooming Room", start: "10-05-2025", expiry: "10-05-2026", remaining: "200 days left", customers: "540", city: "Dubai", status: "Active" },
-    { id: "SLN-9929", name: "Silk & Smooth", start: "11-11-2025", expiry: "11-11-2026", remaining: "250 days left", customers: "1100", city: "Ajman", status: "Active" },
-    { id: "SLN-9000", name: "Oasis Beauty", start: "02-14-2025", expiry: "02-14-2026", remaining: "Expiring with 2 days", customers: "300", city: "Dubai", status: "Expired" },
+    { label: t('active_salons'), value: "24", bg: "bg-[#F5F5F3]" },
+    { label: t('total_customers'), value: "12,400", bg: "bg-[#F5F5F3]" },
+    { label: t('expiring_soon'), value: "04", bg: "bg-[#F5F5F3]", valueColor: "text-[#D97706]" },
   ];
 
   const filteredSalons = useMemo(() => {
+    const salons = [
+      { id: "SLN-9921", name: "Elite Hair & Spa", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Expired" },
+      { id: "SLN-9922", name: "Luxe Salon", start: "01-15-2025", expiry: "01-15-2026", remaining: "Expiring with 15 days", customers: "850", city: "Abu Dhabi", status: "Expired" },
+      { id: "SLN-9923", name: "Bella Spa", start: "05-20-2025", expiry: "05-20-2026", remaining: "320 days left", customers: "2100", city: "Sharjah", status: "Active" },
+      { id: "SLN-9924", name: "Glow Parlour", start: "03-10-2025", expiry: "03-10-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
+      { id: "SLN-9925", name: "Modern Cuts", start: "08-01-2025", expiry: "08-01-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
+      { id: "SLN-9926", name: "Royal Wellness", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Expired" },
+      { id: "SLN-9927", name: "Urban Chic", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
+      { id: "SLN-9928", name: "The Grooming Room", start: "10-05-2025", expiry: "10-05-2026", remaining: "200 days left", customers: "540", city: "Dubai", status: "Active" },
+      { id: "SLN-9929", name: "Silk & Smooth", start: "11-11-2025", expiry: "11-11-2026", remaining: "250 days left", customers: "1100", city: "Ajman", status: "Active" },
+      { id: "SLN-9000", name: "Oasis Beauty", start: "02-14-2025", expiry: "02-14-2026", remaining: "Expiring with 2 days", customers: "300", city: "Dubai", status: "Expired" },
+    ];
+
     return salons.filter((salon) => {
       const matchesSearch =
         salon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -107,16 +109,16 @@ const SalonsManagement = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800">Salons Management</h1>
+          <h1 className="text-2xl font-semibold text-gray-800">{t('salons_management')}</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Oversee partner business performance, status, and tenant settings across the network.
+            {t('salon_desc')}
           </p>
         </div>
         <Button
           onClick={() => setShowAddModal(true)}
           className="w-full sm:w-auto bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-medium px-6 py-5 rounded-lg"
         >
-          Create New Salon
+          {t('create_new_salon')}
         </Button>
       </div>
 
@@ -134,8 +136,8 @@ const SalonsManagement = () => {
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="relative flex-1">
           <Input
-            className="pl-4 pr-10 py-6 bg-[#F5F5F3] border-none rounded-lg text-gray-500 placeholder:text-gray-400 focus-visible:ring-0"
-            placeholder="Search by salon name, city ..."
+            className="ps-4 pe-10 py-6 bg-[#F5F5F3] border-none rounded-lg text-gray-500 placeholder:text-gray-400 focus-visible:ring-0"
+            placeholder={t('search')}
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -149,12 +151,12 @@ const SalonsManagement = () => {
             setCurrentPage(1);
           }}>
             <SelectTrigger className="w-full sm:w-[200px] py-6 bg-[#F5F5F3] border-none rounded-lg text-gray-500 focus:ring-0">
-              <SelectValue placeholder="Search by Status" />
+              <SelectValue placeholder={t('status')} />
             </SelectTrigger>
             <SelectContent className='w-full'>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="expired">Expired</SelectItem>
+              <SelectItem value="all">{t('all_status')}</SelectItem>
+              <SelectItem value="active">{t('active')}</SelectItem>
+              <SelectItem value="expired">{t('expired')}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -169,8 +171,8 @@ const SalonsManagement = () => {
                     !startDate && "text-gray-400"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PP") : <span>Start Date</span>}
+                  <CalendarIcon className="me-2 h-4 w-4" />
+                  {startDate ? format(startDate, "PP") : <span>{t('start_date')}</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -195,8 +197,8 @@ const SalonsManagement = () => {
                     !endDate && "text-gray-400"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PP") : <span>End Date</span>}
+                  <CalendarIcon className="me-2 h-4 w-4" />
+                  {endDate ? format(endDate, "PP") : <span>{t('end_date')}</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -221,20 +223,20 @@ const SalonsManagement = () => {
           <Table className="min-w-[1000px]">
             <TableHeader className='bg-[#F1F8F1]'>
               <tr className=" border-none">
-                <TableHead className="text-gray-600 font-bold py-4 pl-6 uppercase text-[13px]">SALON NAME</TableHead>
-                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">START DATE</TableHead>
-                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">EXPIRY DATE</TableHead>
-                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">DAYS REMAINING</TableHead>
-                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">CUTOMERS COUNT</TableHead>
-                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">CITY</TableHead>
-                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">STATUS</TableHead>
+                <TableHead className="text-gray-600 font-bold py-4 ps-6 uppercase text-[13px]">{t('salon_name')}</TableHead>
+                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">{t('start_date')}</TableHead>
+                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">{t('expiry_date')}</TableHead>
+                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">{t('days_remaining')}</TableHead>
+                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">{t('customers_count')}</TableHead>
+                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">{t('city')}</TableHead>
+                <TableHead className="text-gray-600 font-bold py-4 uppercase text-[13px]">{t('status')}</TableHead>
               </tr>
             </TableHeader>
             <TableBody>
               {paginatedSalons.length > 0 ? (
                 paginatedSalons.map((salon, i) => (
                   <TableRow key={i} className="group hover:bg-gray-50/50 border-b border-gray-50 transition-colors relative">
-                    <TableCell className="py-5 pl-6">
+                    <TableCell className="py-5 ps-6">
                       <p className="font-semibold text-gray-800 text-[15px]">{salon.name}</p>
                       <p className="text-xs text-gray-400">ID: {salon.id}</p>
                     </TableCell>
@@ -242,7 +244,7 @@ const SalonsManagement = () => {
                     <TableCell className="text-gray-700 font-medium text-[15px]">{salon.expiry}</TableCell>
                     <TableCell>
                       <Badge className="bg-[#FDE6D2] text-[#D97706] hover:bg-[#FDE6D2] border-none px-4 py-1.5 font-medium rounded-lg shadow-none">
-                        {salon.remaining}
+                        {t(salon.remaining.toLowerCase().replace(/ /g, '_'), { defaultValue: salon.remaining })}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-gray-700 font-medium text-[15px]">{salon.customers}</TableCell>
@@ -254,14 +256,14 @@ const SalonsManagement = () => {
                           : 'bg-[#F9D8D8] text-[#D84C4C] hover:bg-[#F9D8D8]'
                           }`}
                       >
-                        {salon.status}
+                        {t(salon.status.toLowerCase())}
                       </Badge>
                     </TableCell>
 
                     {/* Hover View Button Tab */}
-                    <Link href={`/salons-management/view`}><div className="absolute right-0 top-0 bottom-0 w-max hidden group-hover:flex items-center">
-                      <div className="bg-[#A8D5BA] text-gray-800 font-medium px-4 h-full flex items-center cursor-pointer rounded-l-md shadow-lg">
-                        View
+                    <Link href={`/salons-management/view`}><div className="absolute end-0 top-0 bottom-0 w-max hidden group-hover:flex items-center">
+                      <div className="bg-[#A8D5BA] text-gray-800 font-medium px-4 h-full flex items-center cursor-pointer rounded-s-md shadow-lg">
+                        {t('view')}
                       </div>
                     </div></Link>
                   </TableRow>
@@ -269,7 +271,7 @@ const SalonsManagement = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-gray-500">
-                    No salons found matching your criteria.
+                    {t('no_salons_found')}
                   </TableCell>
                 </TableRow>
               )}
@@ -281,11 +283,11 @@ const SalonsManagement = () => {
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-10">
         <p className="text-sm text-gray-500 order-2 sm:order-1">
-          Showing <span className="font-medium text-gray-700">
-            {filteredSalons.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}
-          </span> to <span className="font-medium text-gray-700">
-            {Math.min(currentPage * itemsPerPage, filteredSalons.length)}
-          </span> of <span className="font-medium text-gray-700">{filteredSalons.length}</span> results
+          {t('showing_results', {
+            start: filteredSalons.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0,
+            end: Math.min(currentPage * itemsPerPage, filteredSalons.length),
+            total: filteredSalons.length
+          })}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2 order-1 sm:order-2">
           <Button
@@ -294,8 +296,8 @@ const SalonsManagement = () => {
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
+            <ChevronLeft className="h-4 w-4 me-1" />
+            {t('previous')}
           </Button>
           <div className="hidden min-[400px]:flex items-center gap-1 mx-2">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -319,8 +321,8 @@ const SalonsManagement = () => {
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages || totalPages === 0}
           >
-            Next
-            <ChevronRight className="h-4 w-4 ml-1" />
+            {t('next')}
+            <ChevronRight className="h-4 w-4 ms-1" />
           </Button>
         </div>
       </div>
@@ -332,30 +334,29 @@ const SalonsManagement = () => {
             {/* Modal Header */}
             <div className="flex items-start gap-4">
               <div>
-                <h2 className="text-xl font-semibold text-gray-800">Add New Salon</h2>
-                <p className="text-sm text-gray-500">Register a new salon or clinic into the loyalty network.</p>
+                <h2 className="text-xl font-semibold text-gray-800">{t('add_new_salon')}</h2>
+                <p className="text-sm text-gray-500">{t('add_new_salon_desc')}</p>
               </div>
             </div>
 
             <div className="space-y-6">
-              {/* Row 1 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label className="text-gray-700 font-medium">Business Name</Label>
+                  <Label className="text-gray-700 font-medium">{t('business_name')}</Label>
                   <Input
                     placeholder="Rg. Elgance Bonuty Spa"
                     className="bg-[#E9E9E7] border-none h-12 rounded-xl placeholder:text-gray-400 focus-visible:ring-0"
                   />
                 </div>
                 <div className="space-y-2 w-full">
-                  <Label className="text-gray-700 font-medium">Business Type</Label>
+                  <Label className="text-gray-700 font-medium">{t('business_type')}</Label>
                   <Select onValueChange={() => setShowWarningModal(true)}>
                     <SelectTrigger className="bg-[#E9E9E7] w-full py-6 border-none h-12 rounded-xl text-gray-500 focus:ring-0">
-                      <SelectValue placeholder="Select Type" />
+                      <SelectValue placeholder={t('select_type')} />
                     </SelectTrigger>
                     <SelectContent className="bg-[#D4A1AF] border-none text-gray-800">
-                      <SelectItem value="salon" className="focus:bg-[#C4919F]">Salon</SelectItem>
-                      <SelectItem value="spa" className="focus:bg-[#C4919F]">Spa</SelectItem>
+                      <SelectItem value="salon" className="focus:bg-[#C4919F]">{t('salon', { defaultValue: 'Salon' })}</SelectItem>
+                      <SelectItem value="spa" className="focus:bg-[#C4919F]">{t('spa', { defaultValue: 'Spa' })}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -363,13 +364,13 @@ const SalonsManagement = () => {
 
               {/* Row 2 */}
               <div className="space-y-2">
-                <Label className="text-gray-700 font-medium">City / Location</Label>
+                <Label className="text-gray-700 font-medium">{t('city_location')}</Label>
                 <div className="relative">
                   <Input
                     placeholder="Al Qouz Fourth,Dubai,UAE"
-                    className="bg-[#E9E9E7] border-none h-12 rounded-xl pr-10 focus-visible:ring-0"
+                    className="bg-[#E9E9E7] border-none h-12 rounded-xl pe-10 focus-visible:ring-0"
                   />
-                  <svg className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-500" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" />
                   </svg>
                 </div>
@@ -377,32 +378,32 @@ const SalonsManagement = () => {
 
               {/* Subscription Plan Section */}
               <div className="space-y-4 w-full">
-                <h3 className="text-lg font-semibold text-gray-800">Subscription Plan</h3>
+                <h3 className="text-lg font-semibold text-gray-800">{t('subscription_plan')}</h3>
                 <div className="space-y-2">
-                  <Label className="text-gray-700 font-medium text-sm">Subscription Type</Label>
+                  <Label className="text-gray-700 font-medium text-sm">{t('subscription_type')}</Label>
                   <Select>
                     <SelectTrigger className="bg-[#E9E9E7] w-full py-6 border-none h-12 rounded-xl text-gray-500 focus:ring-0">
-                      <SelectValue placeholder="Select Type" />
+                      <SelectValue placeholder={t('select_type')} />
                     </SelectTrigger>
                     <SelectContent className="bg-[#D4A1AF] border-none text-gray-800">
-                      <SelectItem value="basic" className="focus:bg-[#C4919F]">Basic</SelectItem>
-                      <SelectItem value="premium" className="focus:bg-[#C4919F]">Premium</SelectItem>
+                      <SelectItem value="basic" className="focus:bg-[#C4919F]">{t('basic', { defaultValue: 'Basic' })}</SelectItem>
+                      <SelectItem value="premium" className="focus:bg-[#C4919F]">{t('premium', { defaultValue: 'Premium' })}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-gray-700 font-medium text-sm">Start Date</Label>
+                    <Label className="text-gray-700 font-medium text-sm">{t('start_date')}</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full bg-[#E9E9E7] border-none h-12 rounded-xl pl-10 focus:ring-0 text-left font-normal text-gray-500",
+                            "w-full bg-[#E9E9E7] border-none h-12 rounded-xl ps-10 focus:ring-0 text-left font-normal text-gray-500",
                             !newSalonStartDate && "text-gray-400"
                           )}
                         >
-                         
+
                           {newSalonStartDate ? format(newSalonStartDate, "PP") : <span>12-12-2025</span>}
                         </Button>
                       </PopoverTrigger>
@@ -417,17 +418,16 @@ const SalonsManagement = () => {
                     </Popover>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-700 font-medium text-sm">Expiry Date</Label>
+                    <Label className="text-gray-700 font-medium text-sm">{t('expiry_date')}</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full bg-[#E9E9E7] border-none h-12 rounded-xl pl-10 focus:ring-0 text-left font-normal text-gray-500",
+                            "w-full bg-[#E9E9E7] border-none h-12 rounded-xl ps-10 focus:ring-0 text-left font-normal text-gray-500",
                             !newSalonExpiryDate && "text-gray-400"
                           )}
                         >
-                          {/* <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" /> */}
                           {newSalonExpiryDate ? format(newSalonExpiryDate, "PP") : <span>12-12-2026</span>}
                         </Button>
                       </PopoverTrigger>
@@ -446,17 +446,17 @@ const SalonsManagement = () => {
 
               {/* Business Admin Info Section */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800">Assign Business Admin Information</h3>
+                <h3 className="text-lg font-semibold text-gray-800">{t('assign_admin_info')}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-gray-700 font-medium text-sm">Phone Number</Label>
+                    <Label className="text-gray-700 font-medium text-sm">{t('phone')}</Label>
                     <Input
                       placeholder="+1 (555) 000 0000"
                       className="bg-[#E9E9E7] border-none h-12 rounded-xl focus-visible:ring-0"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-gray-700 font-medium text-sm">Email Address</Label>
+                    <Label className="text-gray-700 font-medium text-sm">{t('email')}</Label>
                     <Input
                       placeholder="contact@gmail.com"
                       className="bg-[#E9E9E7] border-none h-12 rounded-xl focus-visible:ring-0"
@@ -467,11 +467,11 @@ const SalonsManagement = () => {
 
               {/* Account Status */}
               <div className="space-y-4 ">
-                <h3 className="text-lg font-semibold text-gray-800">Account Status</h3>
+                <h3 className="text-lg font-semibold text-gray-800">{t('status')}</h3>
                 <div className="flex flex-col sm:flex-row items-center justify-between p-4 border border-[#D1EBD9] rounded-xl bg-[#F0F4F1] gap-4">
                   <div className="text-center sm:text-left">
-                    <h4 className="font-semibold text-gray-800">Activate Business Account</h4>
-                    <p className="text-xs text-gray-500">Enable this business profile to start processing transactions within the network.</p>
+                    <h4 className="font-semibold text-gray-800">{t('activate_account')}</h4>
+                    <p className="text-xs text-gray-500">{t('activate_account_desc')}</p>
                   </div>
                   <Switch className="data-[state=checked]:bg-[#D45D8A]" defaultChecked />
                 </div>
@@ -484,13 +484,13 @@ const SalonsManagement = () => {
                   className="w-full sm:w-auto bg-transparent border-[#D45D8A] text-[#D45D8A] hover:bg-[#D45D8A]/10 px-8 py-3 h-auto rounded-xl font-medium order-2 sm:order-1"
                   onClick={() => setShowAddModal(false)}
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
                 <Button
                   className="w-full sm:w-auto bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-medium px-8 py-3 h-auto rounded-xl shadow-none order-1 sm:order-2"
                   onClick={handleSaveSalon}
                 >
-                  Save Salon
+                  {t('save_salon')}
                 </Button>
               </div>
             </div>
@@ -503,7 +503,7 @@ const SalonsManagement = () => {
         <DialogContent className="max-w-[400px] p-0 border-none bg-[#E9E9E7] rounded-3xl overflow-hidden">
           <div className="relative p-10 flex flex-col items-center text-center">
             <button
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 border border-gray-200 rounded-xl p-2"
+              className="absolute end-4 top-4 text-gray-400 hover:text-gray-600 border border-gray-200 rounded-xl p-2"
               onClick={() => setShowSuccessModal(false)}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
@@ -516,16 +516,16 @@ const SalonsManagement = () => {
             </div>
 
             <h3 className="text-xl font-medium text-gray-700 leading-tight mb-8">
-              Business Admin invite has been sent successfully.
+              {t('invite_sent_success')}
             </h3>
 
             <div className="w-full space-y-4 mb-10 pt-4 border-t border-gray-200">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 font-medium">Business Name</span>
+                <span className="text-gray-600 font-medium">{t('business_name')}</span>
                 <span className="text-gray-500 font-medium">Elegance Beauty Spa</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 font-medium">Admin Number</span>
+                <span className="text-gray-600 font-medium">{t('admin_number')}</span>
                 <span className="text-gray-500 font-medium">+1 (555) 000 0000</span>
               </div>
             </div>
@@ -534,7 +534,7 @@ const SalonsManagement = () => {
               className="w-48 bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-bold py-6 text-lg rounded-2xl shadow-none"
               onClick={() => setShowSuccessModal(false)}
             >
-              ok
+              {t('ok')}
             </Button>
           </div>
         </DialogContent>
@@ -545,7 +545,7 @@ const SalonsManagement = () => {
         <DialogContent className="max-w-[400px] p-0 border-none bg-[#E9E9E7] rounded-3xl overflow-hidden">
           <div className="relative p-10 flex flex-col items-center text-center">
             <button
-              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 border border-gray-200 rounded-xl p-2"
+              className="absolute end-4 top-4 text-gray-400 hover:text-gray-600 border border-gray-200 rounded-xl p-2"
               onClick={() => setShowWarningModal(false)}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
@@ -560,7 +560,7 @@ const SalonsManagement = () => {
             </div>
 
             <h3 className="text-xl font-medium text-gray-700 leading-tight mb-10 px-4">
-              Once created, Business Type cannot be changed. Continue?
+              {t('business_type_change_warning')}
             </h3>
 
             <div className="flex gap-4 w-full justify-center">
@@ -569,13 +569,13 @@ const SalonsManagement = () => {
                 className="w-32 bg-transparent border-[#D45D8A] text-[#D45D8A] hover:bg-[#D45D8A]/10 py-6 rounded-xl font-bold"
                 onClick={() => setShowWarningModal(false)}
               >
-                No
+                {t('no')}
               </Button>
               <Button
                 className="w-32 bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-bold py-6 rounded-xl shadow-none"
                 onClick={() => setShowWarningModal(false)}
               >
-                Yes
+                {t('yes')}
               </Button>
             </div>
           </div>

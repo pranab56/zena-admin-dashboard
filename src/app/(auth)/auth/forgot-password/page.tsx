@@ -10,6 +10,8 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 
+import { useSendOTPMutation } from '@/features/auth/authApi';
+
 interface ApiError {
   data?: {
     message?: string;
@@ -20,8 +22,8 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
+  const [sendOTP, { isLoading }] = useSendOTPMutation();
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -43,28 +45,29 @@ export default function ForgotPasswordPage() {
     }
 
     try {
-      setIsLoading(true);
+      const response = await sendOTP({ email }).unwrap();
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (response.success) {
+        setIsSuccess(true);
+        toast.success(response.message || 'OTP sent successfully');
 
-      // Your API call would go here
-      // const response = await forgotEmail({ email: email }).unwrap() as ForgotEmailResponse;
+        const { otp, hashCode } = response.data;
 
-      // Show success state
-      setIsSuccess(true);
+        // Encode parameters to make them less readable in the URL
+        const encodedEmail = btoa(email);
+        const encodedOTP = btoa(otp.toString());
+        const encodedHash = btoa(hashCode);
 
-      // Simulate redirect after success
-      router.push('/auth/verify-email');
-      // router.push(`/auth/verify-email?forgetToken=${response.data?.forgetToken}`);
-
-      setIsLoading(false);
-    } catch (error) {
-      const apiError = error as ApiError;
-      console.log('Forgot password error:', error);
+        // Redirect to reset-password with encoded params
+        setTimeout(() => {
+          router.push(`/auth/reset-password?e=${encodedEmail}&o=${encodedOTP}&h=${encodedHash}`);
+        }, 2000);
+      }
+    } catch (err: any) {
+      const apiError = err as ApiError;
+      console.log('Forgot password error:', err);
       setError(apiError?.data?.message || 'Failed to send OTP. Please try again.');
-      setIsSuccess(false);
-      setIsLoading(false);
+      toast.error(apiError?.data?.message || 'Failed to send OTP');
     }
   };
 

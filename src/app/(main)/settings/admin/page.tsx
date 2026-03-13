@@ -1,10 +1,7 @@
-
-const page = () => {
+export default function AdminSettings() {
   return (
     <div>
-      This is admin settings page.
+      <h1>Admin Settings</h1>
     </div>
   );
-};
-
-export default page;
+}

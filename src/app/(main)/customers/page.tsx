@@ -1,10 +1,11 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { useCustomerQuery } from "@/features/admin/customarApi/customarApi";
 import { Users } from "lucide-react";
 import Image from 'next/image';
+import { useTranslation } from 'react-i18next';
 import CustomerManagement from "../../../components/super-admin/Customers/CustomerManagement";
-
 
 const formatValue = (value: number): string | number => {
   if (value >= 1000) {
@@ -13,39 +14,46 @@ const formatValue = (value: number): string | number => {
   return value;
 };
 
-const page = () => {
-  const data = [
+const Page = () => {
+  const { t } = useTranslation();
+  const { data: apiResponse, isLoading } = useCustomerQuery({});
+  const dashboardData = apiResponse?.dashBoardData;
+  const customersData = apiResponse?.data || [];
+
+  const statsData = [
     {
       id: 1,
-      title: "Total Customers",
-      value: 43,
+      title: t('total_customers', { defaultValue: 'Total Customers' }),
+      value: dashboardData?.totalCustomer || 0,
       icon: Users,
       bgClass: 'bg-[#EEF8ED]'
     },
     {
       id: 2,
-      title: "Active Customers",
-      value: 8,
+      title: t('active_customers', { defaultValue: 'Active Customers' }),
+      value: dashboardData?.activeCustomer || 0,
       icon: Users,
       bgClass: 'bg-[#FFF8F5]'
     },
     {
       id: 3,
-      title: "Points Issued Today",
-      value: 1200,
+      title: t('points_issued_today', { defaultValue: 'Points Issued Today' }),
+      value: dashboardData?.todayIssued || 0,
       icon: Users,
       bgClass: 'bg-[#FFF4CC]'
     },
   ];
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-gray-500 font-bold">{t('loading')}</div>;
+  }
 
   return (
     <div>
       <div className="space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {data.map((stat) => {
-            const Icon = stat.icon;
-
+          {statsData.map((stat) => {
             return (
               <Card
                 key={stat.id}
@@ -73,10 +81,10 @@ const page = () => {
         </div>
 
         {/* Customer Management Section */}
-        <CustomerManagement />
+        <CustomerManagement customers={customersData} />
       </div>
     </div>
   );
 };
 
-export default page;
+export default Page;

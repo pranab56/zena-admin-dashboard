@@ -3,6 +3,7 @@
 import { Input } from '@/components/ui/input';
 import { Bell, CheckCircle2, CreditCard, Search } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface Notification {
   id: number;
@@ -13,6 +14,7 @@ interface Notification {
 }
 
 const NotificationsPage = () => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'read'>('all');
 
@@ -106,11 +108,11 @@ const NotificationsPage = () => {
   const getTabLabel = (tab: 'all' | 'unread' | 'read') => {
     switch (tab) {
       case 'all':
-        return `All (${totalCount})`;
+        return `${t('all')} (${totalCount})`;
       case 'unread':
-        return `Unread (${unreadCount})`;
+        return `${t('unread')} (${unreadCount})`;
       case 'read':
-        return `Read (${readCount})`;
+        return `${t('read')} (${readCount})`;
     }
   };
 
@@ -121,23 +123,23 @@ const NotificationsPage = () => {
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <Bell className="w-7 h-7 text-pink-400 fill-pink-400" />
-            <h1 className="text-3xl font-normal text-gray-800">Notifications</h1>
+            <h1 className="text-3xl font-normal text-gray-800">{t('notifications')}</h1>
           </div>
-          <p className="text-gray-600 text-sm ml-10">
-            {totalCount} Notifications
+          <p className="text-gray-600 text-sm ms-10">
+            {t('notifications_count', { count: totalCount })}
           </p>
         </div>
 
         {/* Search Bar */}
         <div className="mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               type="text"
-              placeholder="Search"
+              placeholder={t('search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 bg-white border-gray-300 focus:border-gray-400 focus:ring-0"
+              className="ps-10 h-11 bg-white border-gray-300 focus:border-gray-400 focus:ring-0"
             />
           </div>
         </div>
@@ -153,7 +155,7 @@ const NotificationsPage = () => {
           >
             {getTabLabel('all')}
             {activeTab === 'all' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+              <div className="absolute bottom-0 start-0 end-0 h-0.5 bg-gray-900" />
             )}
           </button>
           <button
@@ -165,7 +167,7 @@ const NotificationsPage = () => {
           >
             {getTabLabel('unread')}
             {activeTab === 'unread' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+              <div className="absolute bottom-0 start-0 end-0 h-0.5 bg-gray-900" />
             )}
           </button>
           <button
@@ -177,7 +179,7 @@ const NotificationsPage = () => {
           >
             {getTabLabel('read')}
             {activeTab === 'read' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+              <div className="absolute bottom-0 start-0 end-0 h-0.5 bg-gray-900" />
             )}
           </button>
         </div>
@@ -206,7 +208,7 @@ const NotificationsPage = () => {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <p className="text-gray-900 text-sm font-normal">
-                  {notification.message}
+                  {t(notification.message.toLowerCase().replace(/ /g, '_'))}
                 </p>
               </div>
 
@@ -226,7 +228,7 @@ const NotificationsPage = () => {
         {/* Empty State */}
         {filteredNotifications.length === 0 && (
           <div className="bg-white rounded-lg p-12 text-center">
-            <p className="text-gray-500">No notifications found</p>
+            <p className="text-gray-500">{t('no_notifications_found')}</p>
           </div>
         )}
       </div>
