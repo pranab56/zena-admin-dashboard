@@ -63,7 +63,7 @@ const SalonsManagement = () => {
     limit: itemsPerPage
   });
 
-  const [createSalon, { isLoading: isCreating }] = useCreateSalonMutation();
+  const [createSalon] = useCreateSalonMutation();
 
   const salons = salonsRes?.data || [];
   const meta = salonsRes?.meta;
@@ -107,8 +107,9 @@ const SalonsManagement = () => {
         setShowAddModal(false);
         setShowSuccessModal(true);
       }
-    } catch (err: any) {
-      toast.error(err?.data?.message || t('failed_to_create_salon'));
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      toast.error(error?.data?.message || t('failed_to_create_salon'));
     }
   };
 
@@ -244,7 +245,15 @@ const SalonsManagement = () => {
             </TableHeader>
             <TableBody>
               {salons.length > 0 ? (
-                salons.map((salon: any, i: number) => {
+                salons.map((salon: {
+                  _id: string;
+                  businessName: string;
+                  salonId: string;
+                  startDate: string;
+                  expiryDate: string;
+                  visitor?: number;
+                  city: string;
+                }, i: number) => {
                   const expiryDate = new Date(salon.expiryDate);
                   const isExpired = isBefore(expiryDate, new Date());
                   const daysRemaining = differenceInDays(expiryDate, new Date());

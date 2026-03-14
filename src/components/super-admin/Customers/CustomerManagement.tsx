@@ -75,7 +75,7 @@ const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
       referredByImage: `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'U')}&background=random`,
       avatar: c.image ? `${baseURL}/${c.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'U')}&background=random`
     }));
-  }, [customers]);
+  }, [customers, t]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -97,7 +97,6 @@ const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
     skip: !selectedCustomerId || activeTab !== 'used'
   });
   const usedRewards = usedRewardsResponse?.data?.rewards || [];
-  const meta = usedRewardsResponse?.meta;
 
   // Filter customers
   const filteredCustomers = mappedCustomers.filter(customer => {
@@ -428,7 +427,7 @@ const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
                   <div className="min-h-[200px]">
                     {activeTab === 'active' ? (
                       <div className="space-y-4">
-                        {singleCustomerData.availableReward?.map((reward: any) => (
+                        {singleCustomerData.availableReward?.map((reward: { _id: string; title: string; userId: string }) => (
                           <div key={reward._id} className="bg-[#EEF8ED] rounded-2xl p-6 flex items-center justify-between border border-green-50 shadow-sm group">
                             <div className="flex items-center gap-6">
                               <div>
@@ -465,7 +464,7 @@ const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {usedRewards.map((reward: any) => (
+                          {usedRewards.map((reward: { _id: string; title: string; createdAt: string; discountAmount?: number }) => (
                             <div key={reward._id} className="bg-white rounded-2xl p-4 border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
                               <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden">
                                 <Image src="/logo/cardUser.png" width={32} height={32} alt="reward" />

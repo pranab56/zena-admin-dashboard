@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
           router.push(`/auth/reset-password?e=${encodedEmail}&h=${encodedHash}`);
         }, 2000);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       const apiError = err as ApiError;
       console.log('Forgot password error:', err);
       setError(apiError?.data?.message || 'Failed to send OTP. Please try again.');

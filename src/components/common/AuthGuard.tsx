@@ -20,7 +20,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   });
 
   const userData = profileRes?.data;
-  const userRole = userData?.role;
 
   useEffect(() => {
     // 1. If no token, redirect to login

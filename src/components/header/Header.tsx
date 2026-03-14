@@ -21,7 +21,7 @@ interface HeaderProps {
 const Header = ({ onMenuClick }: HeaderProps) => {
   const { t, i18n } = useTranslation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { data: profileRes, isLoading: isProfileLoading } = useGetMyProfileQuery({});
+  const { data: profileRes } = useGetMyProfileQuery({});
   const userData = profileRes?.data;
 
   const userName = userData?.name || "User";

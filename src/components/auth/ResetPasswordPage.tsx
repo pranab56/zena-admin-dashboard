@@ -119,7 +119,7 @@ export default function ResetPasswordPage() {
             router.push('/auth/login');
           }, 2000);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.log('Reset password error:', err);
         const apiError = err as ApiError;
         toast.error(apiError?.data?.message || 'Password reset failed!');
