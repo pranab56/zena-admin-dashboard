@@ -7,10 +7,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { baseURL } from '@/utils/BaseURL';
 import { Bell, ChevronDown, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useGetMyProfileQuery } from '../../features/profile/profileApi';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -19,12 +21,17 @@ interface HeaderProps {
 const Header = ({ onMenuClick }: HeaderProps) => {
   const { t, i18n } = useTranslation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const userName = "Rasel Parvez";
-  const userRole = t('super_admin');
+  const { data: profileRes, isLoading: isProfileLoading } = useGetMyProfileQuery({});
+  const userData = profileRes?.data;
+
+  const userName = userData?.name || "User";
+  const userRole = userData?.role || t('super_admin');
+  const userImage = userData?.image ? `${baseURL}/${userData.image}` : "";
   const unreadCount = 3;
   const router = useRouter();
 
   const currentLangCode = i18n.language ? i18n.language.split('-')[0].toUpperCase() : 'EN';
+
 
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang.toLowerCase());
@@ -118,7 +125,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                 <div onClick={() => router.push("/my-profile")} className="h-10 w-10 cursor-pointer sm:h-12 sm:w-12 rounded-2xl overflow-hidden border border-gray-200 bg-[#E8D9C5] p-0.5">
                   <div className="w-full h-full rounded-[14px] overflow-hidden bg-[#D8C7B0]">
                     <Avatar className="h-full w-full rounded-none border-none">
-                      <AvatarImage src="" alt={userName} className="object-cover" />
+                      <AvatarImage src={userImage} alt={userName} className="object-cover" />
                       <AvatarFallback className="bg-transparent text-gray-700 font-bold text-sm sm:text-base">
                         {getInitials(userName)}
                       </AvatarFallback>

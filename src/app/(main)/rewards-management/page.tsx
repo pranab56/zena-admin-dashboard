@@ -1,4 +1,5 @@
 "use client";
+import Loading from '@/components/common/Loading';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -6,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useAllRewardQuery, useCreateRewardMutation, useUpdateRewardMutation } from '@/features/admin/reward/rewardApi';
 import { baseURL } from '@/utils/BaseURL';
-import { FilePenLine, ImageIcon, Plus, X } from 'lucide-react';
+import { FilePenLine, ImageIcon, Loader2, Plus, X } from 'lucide-react';
 import Image from 'next/image';
 import { ChangeEvent, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -44,6 +45,7 @@ export default function LoyaltyRewards() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const rewards = useMemo(() => apiResponse?.data || [], [apiResponse]);
@@ -174,6 +176,7 @@ export default function LoyaltyRewards() {
   };
 
   const toggleRewardStatus = async (reward: Reward) => {
+    setTogglingId(reward._id);
     try {
       const formDataToSubmit = new FormData();
       const dataObject = {
@@ -189,6 +192,8 @@ export default function LoyaltyRewards() {
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       toast.error(err?.data?.message || 'Failed to update status');
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -238,9 +243,7 @@ export default function LoyaltyRewards() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center p-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#7fa885]"></div>
-          </div>
+          <Loading />
         ) : (
           <>
             {/* Rewards Grid */}
@@ -283,11 +286,17 @@ export default function LoyaltyRewards() {
                         <span className={`text-[11px] font-medium ${reward.rewardStatus ? 'text-green-600' : 'text-gray-400'}`}>
                           {reward.rewardStatus ? t('active') : t('inactive')}
                         </span>
-                        <Switch
-                          checked={reward.rewardStatus}
-                          onCheckedChange={() => toggleRewardStatus(reward)}
-                          className="data-[state=checked]:bg-[#7fa885] scale-90"
-                        />
+                        {togglingId === reward._id ? (
+                          <div className="flex items-center justify-center w-8 h-4">
+                            <Loader2 className="w-4 h-4 animate-spin text-[#7fa885]" />
+                          </div>
+                        ) : (
+                          <Switch
+                            checked={reward.rewardStatus}
+                            onCheckedChange={() => toggleRewardStatus(reward)}
+                            className="data-[state=checked]:bg-[#7fa885] scale-90 cursor-pointer"
+                          />
+                        )}
                       </div>
                       <Button
                         variant="ghost"
@@ -317,7 +326,7 @@ export default function LoyaltyRewards() {
             {/* Image Upload */}
             <div className="relative">
               <div
-                className="bg-[#b5b5b5] border-2 border-dashed border-gray-400 rounded-lg h-48 flex flex-col items-center justify-center mb-2 cursor-pointer hover:bg-[#a5a5a5] transition-colors"
+                className="bg-[#b5b5b5] border-2 border-dashed border-gray-400 rounded-lg h-48 flex flex-col items-center justify-center mb-2 cursor-pointer transition-colors"
                 onClick={triggerFileInput}
               >
                 {imagePreview ? (
@@ -329,10 +338,10 @@ export default function LoyaltyRewards() {
                       height={1000}
                       className="w-full h-full object-cover rounded-lg"
                     />
-                    <div className="absolute inset-0 bg-gray-50 bg-opacity-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-lg">
                       <div className="text-white text-center">
                         <ImageIcon className="w-8 h-8 mx-auto mb-1" />
-                        <p className="text-sm">{t('click_to_change_image', { defaultValue: 'Click to change image' })}</p>
+                        <p className="text-sm font-medium">{t('click_to_change_image', { defaultValue: 'Click to change image' })}</p>
                       </div>
                     </div>
                   </>

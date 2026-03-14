@@ -1,5 +1,6 @@
 "use client";
 
+import Loading from '@/components/common/Loading';
 import { Card, CardContent } from "@/components/ui/card";
 import { useCustomerQuery } from "@/features/admin/customarApi/customarApi";
 import { Users } from "lucide-react";
@@ -45,7 +46,7 @@ const Page = () => {
   ];
 
   if (isLoading) {
-    return <div className="p-8 text-center text-gray-500 font-bold">{t('loading')}</div>;
+    return <Loading />;
   }
 
   return (
@@ -57,7 +58,7 @@ const Page = () => {
             return (
               <Card
                 key={stat.id}
-                className={`${stat.bgClass} border-none shadow-sm rounded-[2rem] overflow-hidden transition-all`}
+                className={`${stat.bgClass} border-none shadow-sm rounded-[1rem] overflow-hidden transition-all`}
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">

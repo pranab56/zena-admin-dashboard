@@ -47,19 +47,19 @@ export default function MostActiveCustomers({ customers = [] }: MostActiveCustom
   const displayData = customers.length > 0 ? customers : customersData;
   return (
     <div className="w-full h-full">
-      <Card className="border-none shadow-sm rounded-2xl bg-white h-full flex flex-col">
+      <Card className="border-none shadow-sm rounded-2xl bg-white h-[500px] flex flex-col">
         {/* Header */}
-        <div className="px-6 sm:px-10 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between py-4 sm:py-0 sm:pb-3 gap-2">
-            <h2 className="text-lg sm:text-xl font-black text-gray-900 uppercase tracking-tight">
+        <div className="px-6 sm:px-10 border-b border-gray-200 shrink-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 gap-2">
+            <h2 className="text-2xl font-semibold font-serif">
               {t('most_active_customers')}
             </h2>
           </div>
         </div>
 
         {/* Customer List */}
-        <div className="flex-1 custom-scrollbar">
-          <div className="px-4">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="px-4 py-2">
             {displayData.map((customer, index) => (
               <div
                 key={customer.id}

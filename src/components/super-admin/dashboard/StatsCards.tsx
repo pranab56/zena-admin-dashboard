@@ -34,7 +34,7 @@ const StatsCards = ({ stats }: StatsCardsProps) => {
         return (
           <Card
             key={stat.id}
-            className={`${stat.bgClass} border-none shadow-sm rounded-[2rem] overflow-hidden transition-all `}
+            className={`${stat.bgClass} border-none rounded-[1rem] overflow-hidden transition-all `}
           >
             <CardContent className="p-6">
               <div className="flex items-start justify-between">

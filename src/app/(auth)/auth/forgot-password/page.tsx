@@ -51,16 +51,15 @@ export default function ForgotPasswordPage() {
         setIsSuccess(true);
         toast.success(response.message || 'OTP sent successfully');
 
-        const { otp, hashCode } = response.data;
+        const { hashCode } = response.data;
 
         // Encode parameters to make them less readable in the URL
         const encodedEmail = btoa(email);
-        const encodedOTP = btoa(otp.toString());
         const encodedHash = btoa(hashCode);
 
         // Redirect to reset-password with encoded params
         setTimeout(() => {
-          router.push(`/auth/reset-password?e=${encodedEmail}&o=${encodedOTP}&h=${encodedHash}`);
+          router.push(`/auth/reset-password?e=${encodedEmail}&h=${encodedHash}`);
         }, 2000);
       }
     } catch (err: any) {
@@ -137,10 +136,6 @@ export default function ForgotPasswordPage() {
               ) : 'Send OTP'}
             </Button>
 
-            {/* Success Message */}
-            {isSuccess && (
-              toast.success('OTP sent! Redirecting to verification page...')
-            )}
 
             {/* Back to Login Link */}
             <div className="text-center text-sm text-gray-600 mt-2 pt-4 border-t border-gray-200">

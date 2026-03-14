@@ -1,4 +1,5 @@
 "use client";
+import Loading from '@/components/common/Loading';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -6,11 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useGetSettingsQuery, useMySettingsMutation } from '@/features/admin/settings/settingsApi';
 import { baseURL } from '@/utils/BaseURL';
-import { Clock, Edit2, Image as ImageIcon, Loader2, MapPin, Star, X } from 'lucide-react';
+import { Clock, Edit2, Image as ImageIcon, Loader2, MapPin, X } from 'lucide-react';
 import Image from 'next/image';
 import { ChangeEvent, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 
 interface OperatingHours {
   [key: string]: {
@@ -272,6 +273,10 @@ const SalonProfileSetup = () => {
     return t('varies');
   };
 
+  if (isFetching) {
+    return <Loading />;
+  }
+
   return (
     <div className="px-4 sm:px-0">
       <div className="">
@@ -283,7 +288,7 @@ const SalonProfileSetup = () => {
               {t('salon_profile_setup_desc')}
             </p>
           </div>
-          <div className="flex flex-col items-end">
+          {/* <div className="flex flex-col items-end">
             <div className="flex items-center gap-2 bg-[#FFF9F6] px-4 py-2 rounded-2xl border border-[#FFE4D6]">
               <Star className="w-6 h-6 text-[#FFD700] fill-[#FFD700]" />
               <span className="text-2xl font-bold text-[#2D2D2D]">
@@ -293,7 +298,7 @@ const SalonProfileSetup = () => {
             <p className="text-sm text-gray-400 mt-1 font-normal">
               {t('good_experience')}
             </p>
-          </div>
+          </div> */}
         </div>
 
         {/* Image Upload Section */}
@@ -437,7 +442,7 @@ const SalonProfileSetup = () => {
           <Button
             onClick={handleSave}
             disabled={isUpdating || isFetching}
-            className="w-full sm:w-auto bg-pink-600 hover:bg-pink-700 text-white px-10 h-12 text-sm font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-pink-100 transition-all active:scale-95"
+            className="w-full sm:w-auto bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 px-10 h-12 text-sm font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-green-50 transition-all active:scale-95"
           >
             {isUpdating ? (
               <span className="flex items-center gap-2">
@@ -476,7 +481,7 @@ const SalonProfileSetup = () => {
                       <Checkbox
                         checked={operatingHours[day].enabled}
                         onCheckedChange={() => toggleDay(day)}
-                        className="data-[state=checked]:bg-pink-600 data-[state=checked]:border-pink-600 h-5 w-5"
+                        className="data-[state=checked]:bg-white data-[state=checked]:border-[#A8D5BA] data-[state=checked]:text-[#2F6B43] h-5 w-5 border-gray-300"
                       />
                       <span className="text-sm font-bold sm:font-normal text-gray-800 sm:text-gray-700">{t(day.toLowerCase())}</span>
                     </div>
@@ -539,8 +544,11 @@ const SalonProfileSetup = () => {
               {/* Save Button */}
               <div className="flex justify-center">
                 <Button
-                  onClick={() => setShowHoursModal(false)}
-                  className="bg-pink-600 hover:bg-pink-700 text-white px-12"
+                  onClick={() => {
+                    setShowHoursModal(false);
+                    toast.success(t('hours_updated', { defaultValue: 'Operating hours updated' }));
+                  }}
+                  className="bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 px-12 font-bold rounded-xl"
                 >
                   {t('save')}
                 </Button>

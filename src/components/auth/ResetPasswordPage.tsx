@@ -20,27 +20,26 @@ export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const [forgetPassword, { isLoading }] = useForgetPasswordMutation();
 
+  const [otp, setOtp] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
-  const [errors, setErrors] = useState<{ newPassword: string; confirmPassword: string }>({
+  const [errors, setErrors] = useState<{ otp: string; newPassword: string; confirmPassword: string }>({
+    otp: '',
     newPassword: '',
     confirmPassword: ''
   });
 
   // Get and decode values from URL
   const encodedEmail = searchParams.get('e');
-  const encodedOTP = searchParams.get('o');
   const encodedHash = searchParams.get('h');
 
   let email = '';
-  let otp = '';
   let hashCode = '';
 
   try {
     if (encodedEmail) email = atob(encodedEmail);
-    if (encodedOTP) otp = atob(encodedOTP);
     if (encodedHash) hashCode = atob(encodedHash);
   } catch (err) {
     console.error('Failed to decode parameters:', err);
@@ -66,7 +65,14 @@ export default function ResetPasswordPage() {
   };
 
   const handleSubmit = async (): Promise<void> => {
-    const newErrors = { newPassword: '', confirmPassword: '' };
+    const newErrors = { otp: '', newPassword: '', confirmPassword: '' };
+
+    // Validate OTP
+    if (!otp) {
+      newErrors.otp = 'OTP is required';
+    } else if (otp.length < 4) {
+      newErrors.otp = 'Please enter a valid OTP';
+    }
 
     // Validate new password
     const passwordError = validatePassword(newPassword);
@@ -84,8 +90,8 @@ export default function ResetPasswordPage() {
     setErrors(newErrors);
 
     // If no errors, proceed with password reset
-    if (!newErrors.newPassword && !newErrors.confirmPassword) {
-      if (!email || !otp || !hashCode) {
+    if (!newErrors.otp && !newErrors.newPassword && !newErrors.confirmPassword) {
+      if (!email || !hashCode) {
         toast.error('Invalid or missing parameters. Please start again from forgot password page.');
         return;
       }
@@ -104,6 +110,7 @@ export default function ResetPasswordPage() {
           toast.success('Password reset successful! Redirecting to login...');
 
           // Clear form fields
+          setOtp('');
           setNewPassword('');
           setConfirmPassword('');
 
@@ -127,8 +134,10 @@ export default function ResetPasswordPage() {
   };
 
   // Check if form is valid for button state
-  const isFormValid = newPassword.length > 0 &&
+  const isFormValid = otp.length >= 4 &&
+    newPassword.length > 0 &&
     confirmPassword.length > 0 &&
+    !errors.otp &&
     !errors.newPassword &&
     !errors.confirmPassword;
 
@@ -160,6 +169,32 @@ export default function ResetPasswordPage() {
 
           {/* Reset Password Form */}
           <div className="space-y-5">
+            {/* OTP Field */}
+            <div>
+              <Label htmlFor="otp" className="text-gray-700 font-semibold">
+                OTP<span className="text-red-500">*</span>
+              </Label>
+              <div className="relative mt-2">
+                <Input
+                  id="otp"
+                  type="text"
+                  value={otp}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    setOtp(value);
+                    if (errors.otp) setErrors({ ...errors, otp: '' });
+                  }}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Enter 4 or 6 digit OTP"
+                  maxLength={6}
+                  className={`h-12 ${errors.otp ? 'border-red-500' : 'border-gray-300'
+                    } focus:ring-2 focus:ring-green-400`}
+                />
+              </div>
+              {errors.otp && (
+                <p className="mt-1 text-sm text-red-500">{errors.otp}</p>
+              )}
+            </div>
             {/* New Password Field */}
             <div>
               <Label htmlFor="newPassword" className="text-gray-700 font-semibold">

@@ -10,19 +10,28 @@ export const customarApi = baseApi.injectEndpoints({
       }),
     }),
 
-    approveReward: builder.mutation({
+    applyReward: builder.mutation({
       query: (id) => ({
         url: `/customer/approved-reward/${id}`,
         method: "PATCH",
       }),
     }),
 
-     signleCustomer: builder.query({
+    singleCustomer: builder.query({
       query: (id) => ({
         url: `/customer/${id}`,
         method: "GET",
       }),
     }),
+
+    usedReword: builder.query({
+      query: (id) => ({
+        url: `/reward/${id}/used`,
+        method: "GET",
+      }),
+    }),
+
+
 
   }),
 });
@@ -30,6 +39,7 @@ export const customarApi = baseApi.injectEndpoints({
 // Export hooks
 export const {
   useCustomerQuery,
-  useApproveRewardMutation,
-  useSignleCustomerQuery
+  useApplyRewardMutation,
+  useSingleCustomerQuery,
+  useUsedRewordQuery,
 } = customarApi;

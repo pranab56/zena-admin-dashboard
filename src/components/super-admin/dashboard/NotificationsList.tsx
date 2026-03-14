@@ -28,10 +28,10 @@ const NotificationsList = ({ notifications }: NotificationsListProps) => {
   };
 
   return (
-    <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden flex flex-col h-full ">
-      <CardHeader className="px-6 sm:px-10 py-6 sm:py-8 border-b border-gray-50 bg-[#F9FAFB]/50">
+    <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden flex flex-col h-[500px] p-0">
+      <CardHeader className="px-6 sm:px-10 py-6 sm:py-8 border-b border-gray-50 bg-[#F9FAFB]/50 shrink-0">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl sm:text-2xl tracking-tight">{t('notifications')}</CardTitle>
+          <CardTitle className="text-lg md:text-2xl font-serif font-semibold">{t('notifications')}</CardTitle>
 
         </div>
       </CardHeader>

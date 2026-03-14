@@ -1,6 +1,5 @@
 "use client";
 
-
 import React from "react";
 import ZenaSidebar from '../../components/appSidebar/AppsideBar';
 import Header from '../../components/header/Header';

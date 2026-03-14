@@ -47,11 +47,11 @@ const PointsPieChart = ({ pointsData }: PointsPieChartProps) => {
   };
 
   return (
-    <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden flex flex-col h-full">
-      <CardHeader className="px-6 sm:px-10 py-6 sm:py-8 border-b border-gray-50 bg-[#F9FAFB]/50">
-        <CardTitle className="text-xl sm:text-2xl tracking-tight">{t('points_distribution')}</CardTitle>
+    <Card className="border-none shadow-sm rounded-2xl bg-white overflow-hidden flex flex-col h-[500px] p-0">
+      <CardHeader className="px-6 sm:px-10 py-6 sm:py-8 border-b border-gray-50 bg-[#F9FAFB]/50 shrink-0">
+        <CardTitle className="text-lg md:text-2xl font-serif font-semibold">{t('points_distribution')}</CardTitle>
       </CardHeader>
-      <CardContent className="p-6 sm:p-10 flex-1 flex items-center justify-center">
+      <CardContent className="p-6 sm:p-10 flex-1 flex items-center justify-center overflow-y-auto custom-scrollbar">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-12 w-full">
           <div className="relative group">
             <ResponsiveContainer width={240} height={240}>

@@ -1,5 +1,6 @@
 "use client";
 
+import Loading from '@/components/common/Loading';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -17,6 +18,7 @@ import { FaEdit } from "react-icons/fa";
 import { FiEye, FiEyeOff, FiMail, FiPhone, FiShield, FiUser } from "react-icons/fi";
 import { HiOutlineCalendar } from "react-icons/hi";
 import { MdOutlineSecurity } from "react-icons/md";
+import { useChangePasswordMutation } from "../../../features/auth/authApi";
 import { useGetMyProfileQuery, useUpdateProfileMutation } from "../../../features/profile/profileApi";
 import { baseURL } from '../../../utils/BaseURL';
 
@@ -49,6 +51,7 @@ const ProfileSettings = () => {
   // API Hooks
   const { data: profileRes, isLoading: isProfileLoading } = useGetMyProfileQuery({});
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+  const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
 
   const profileData = profileRes?.data;
 
@@ -144,14 +147,25 @@ const ProfileSettings = () => {
       return;
     }
 
-    // Reset password API not connected as requested
-    toast.success(t('password_changed_design', { defaultValue: 'Password changed successfully (Design Only)' }));
-    setPasswordFormData({
-      oldPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    });
-    setIsChangePasswordOpen(false);
+    try {
+      const res = await changePassword({
+        oldPassword: passwordFormData.oldPassword,
+        newPassword: passwordFormData.newPassword,
+      }).unwrap();
+
+      if (res.success) {
+        toast.success(res.message || t('password_changed_success', { defaultValue: 'Password changed successfully' }));
+        setPasswordFormData({
+          oldPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        });
+        setIsChangePasswordOpen(false);
+      }
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || t('failed_to_change_password', { defaultValue: 'Failed to change password' }));
+    }
   };
 
   const handleCancelPassword = (): void => {
@@ -185,11 +199,7 @@ const ProfileSettings = () => {
   };
 
   if (isProfileLoading) {
-    return (
-      <div className="w-full flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-10 h-10 animate-spin text-[#A8D5BA]" />
-      </div>
-    );
+    return <Loading />;
   }
 
 
@@ -508,9 +518,15 @@ const ProfileSettings = () => {
                 </Button>
                 <Button
                   onClick={handleSavePassword}
+                  disabled={isChangingPassword}
                   className="w-full md:flex-1 bg-[#D45D8A] hover:bg-[#C14C79] text-white py-7 rounded-2xl font-black shadow-[#D45D8A]/20 shadow-xl transition-all active:scale-[0.98]"
                 >
-                  {t('update_now')}
+                  {isChangingPassword ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {t('updating')}
+                    </span>
+                  ) : t('update_now')}
                 </Button>
               </div>
             </div>

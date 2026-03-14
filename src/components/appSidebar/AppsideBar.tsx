@@ -1,4 +1,7 @@
+"use client";
+
 import { logout } from '@/features/auth/authSlice';
+import { useGetMyProfileQuery } from '@/features/profile/profileApi';
 import {
   ChartNoAxesColumnIncreasing,
   ChevronDown,
@@ -7,7 +10,6 @@ import {
   ChevronUp,
   ClipboardList,
   CreditCard,
-  FileText,
   Gift,
   Grid3x3,
   LayoutDashboard,
@@ -51,6 +53,7 @@ interface SidebarItem {
   icon: React.ComponentType<{ className?: string }>;
   allowedRoles: string[];
   subItems?: SubItem[];
+  activeOnPaths?: string[];
 }
 
 interface ZenaSidebarProps {
@@ -66,17 +69,9 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
   const router = useRouter();
   const dispatch = useDispatch();
   const pathname = usePathname();
-  const [role, setRole] = useState<string>(''); // Default role
   const [openSubMenus, setOpenSubMenus] = useState<{ [key: string]: boolean }>({});
-
-  useEffect(() => {
-    // Get role from localStorage, if not found use default
-    const storedRole = localStorage.getItem('role');
-    if (storedRole) {
-      setRole(storedRole);
-    }
-    // If no role in localStorage, keep default as 'salonadmin'
-  }, []);
+  const { data: profileRes } = useGetMyProfileQuery({});
+  const role = profileRes?.data?.role || '';
 
   // Close mobile sidebar when route changes
   useEffect(() => {
@@ -87,8 +82,8 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
 
   const sidebarItems: SidebarItem[] = [
     { name: t('dashboard'), path: "/", icon: LayoutDashboard, allowedRoles: ['salonadmin', 'ADMIN'] },
-    { name: t('customers'), path: "/customers", icon: Users, allowedRoles: ['salonadmin', 'ADMIN'] },
-    { name: t('visits'), path: "/visits", icon: FileText, allowedRoles: ['salonadmin', 'ADMIN'] },
+    { name: t('customers'), path: "/customers", icon: Users, allowedRoles: ['salonadmin', 'ADMIN'], activeOnPaths: ["/visits"] },
+    // { name: t('visits'), path: "/visits", icon: FileText, allowedRoles: ['salonadmin', 'ADMIN'] },
     { name: t('rewards_management'), path: "/rewards-management", icon: Gift, allowedRoles: ['salonadmin', 'ADMIN'] },
     { name: t('redemption_requests'), path: "/redemption-requests", icon: CreditCard, allowedRoles: ['salonadmin', 'ADMIN'] },
     { name: t('settings'), path: "/settings/super-admin", icon: Settings, allowedRoles: ['salonadmin', 'ADMIN'] },
@@ -108,16 +103,9 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
   ];
 
   // Filter sidebar items based on role
-  // If role is not 'salonadmin' or 'superadmin', show only Dashboard
   const filteredSidebars = sidebarItems.filter(item => {
-    // Check if user role is in allowedRoles
     return item.allowedRoles.includes(role);
   });
-
-  // Alternative: If you want to show all items for salonadmin when role is null
-  // const filteredSidebars = sidebarItems.filter(item => 
-  //   item.allowedRoles.includes(role || 'salonadmin')
-  // );
 
   const isActive = (path: string) => {
     if (path === "/") return pathname === "/";
@@ -131,7 +119,6 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
 
   const handleNavigation = (path: string, hasSubItems?: boolean, itemName?: string) => {
     if (hasSubItems && itemName) {
-      // Toggle submenu
       setOpenSubMenus(prev => ({
         ...prev,
         [itemName]: !prev[itemName]
@@ -142,10 +129,9 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
   };
 
   const handleLogout = () => {
-    console.log('Logout');
-    dispatch(logout()); // This clears token from Redux and localStorage via the slice
+    dispatch(logout());
     localStorage.removeItem('role');
-    router.push('/auth/login');
+    window.location.href = '/auth/login';
   };
 
   return (
@@ -155,7 +141,6 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
       style={{ width: isCollapsed ? '80px' : '256px' }}
     >
       <div className={`flex ${isCollapsed ? 'justify-center' : 'justify-end'} px-5 py-5`}>
-        {/* Toggle button - only visible on desktop or when mobile is open */}
         {isMobileOpen ? (
           <button
             onClick={onCloseMobile}
@@ -175,7 +160,6 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
         )}
       </div>
 
-      {/* Header */}
       <div className={`flex items-center justify-center w-full pb-5 ${isCollapsed ? 'px-4' : 'px-6'}`}>
         {!isCollapsed && (
           <Image
@@ -188,11 +172,12 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
         )}
       </div>
 
-      {/* Navigation */}
       <nav className={`flex-1 ${isCollapsed ? 'px-3' : 'px-4'} overflow-y-auto`}>
         <ul className="space-y-1">
           {filteredSidebars.map((item) => {
-            const isItemActive = isActive(item.path) || isSubItemActive(item.path, item.subItems);
+            const isItemActive = isActive(item.path) ||
+              isSubItemActive(item.path, item.subItems) ||
+              (item.activeOnPaths?.some(p => pathname.startsWith(p)));
             const Icon = item.icon;
             const hasSubItems = item.subItems && item.subItems.length > 0;
             const isSubMenuOpen = openSubMenus[item.name];
@@ -225,14 +210,12 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
                   )}
                 </button>
 
-                {/* Tooltip for collapsed sidebar */}
                 {isCollapsed && (
                   <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-50">
                     {item.name}
                   </div>
                 )}
 
-                {/* Submenu Items */}
                 {!isCollapsed && hasSubItems && isSubMenuOpen && (
                   <ul className="mt-1 space-y-1 rounded-lg py-2 px-2 ms-4">
                     {item.subItems!.map((subItem) => {
@@ -261,7 +244,6 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
         </ul>
       </nav>
 
-      {/* Footer */}
       <div className={`pb-6 mt-auto space-y-3 ${isCollapsed ? 'px-3' : 'px-6'}`}>
         <div className="relative group">
           <Button

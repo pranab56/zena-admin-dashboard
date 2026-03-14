@@ -1,17 +1,18 @@
 'use client';
 
+import Loading from '@/components/common/Loading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useSignleCustomerQuery } from '@/features/admin/customarApi/customarApi';
+import { useSingleCustomerQuery } from '@/features/admin/customarApi/customarApi';
 import { useAllVisitsQuery, useApproveVisitsMutation } from '@/features/admin/visit/visitApi';
 import { baseURL } from '@/utils/BaseURL';
-import { Check, Loader2 } from 'lucide-react';
-import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
+import { ArrowLeft, Check } from 'lucide-react';
+import NextImage from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -19,11 +20,12 @@ import { useTranslation } from 'react-i18next';
 function VisitContent() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const userId = searchParams.get('userId');
   const [showAllHistory, setShowAllHistory] = useState(false);
 
   // Fetch Customer Profile
-  const { data: customerRes, isLoading: isUserLoading, refetch: refetchCustomer } = useSignleCustomerQuery(userId, { skip: !userId });
+  const { data: customerRes, isLoading: isUserLoading, refetch: refetchCustomer } = useSingleCustomerQuery(userId, { skip: !userId });
   const userData = customerRes?.data?.user;
   const totalVisitsCount = customerRes?.data?.totalVisit || 0;
 
@@ -62,11 +64,7 @@ function VisitContent() {
   const displayedHistory = showAllHistory ? approvedVisits : approvedVisits?.slice(0, 2);
 
   if (isUserLoading || isPendingLoading || isApprovedLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#A8D5BA]" />
-      </div>
-    );
+    return <Loading />;
   }
 
   interface VisitData {
@@ -81,21 +79,29 @@ function VisitContent() {
     <div className="w-full">
       {/* Header */}
       <div className="px-1">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{t('confirm_visit')}</h1>
-        <p className="text-gray-500 mt-1.5 text-sm md:text-base">
+        <div className="flex items-center gap-3 mb-1">
+          <button
+            onClick={() => router.back()}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors group cursor-pointer"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-600 group-hover:text-gray-900" />
+          </button>
+          <h1 className="text-2xl md:text-3xl font-medium text-gray-900">{t('confirm_visit')}</h1>
+        </div>
+        <p className="text-gray-500 mt-0.5 text-sm md:text-base ms-12">
           {t('identify_customer_desc')}
         </p>
       </div>
 
       {/* Search Input Section */}
-      <div className="space-y-3 mt-6">
+      {/* <div className="space-y-3 mt-6">
         <Label htmlFor="search-customer" className="text-sm font-semibold text-gray-700 ms-1 uppercase tracking-wider">{t('search_customer_placeholder')}</Label>
         <Input
           id="search-customer"
           placeholder="e.g. 123-456-7890"
           className="w-full py-6 px-4 border-gray-200 focus:border-[#A8D5BA] focus:ring-[#A8D5BA] text-lg rounded-xl shadow-sm"
         />
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-5">
         {/* Left Column - Profile & Services */}
@@ -105,18 +111,18 @@ function VisitContent() {
             <CardContent className="p-6 md:p-8">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                 <div className="relative shrink-0">
-                  <Image
+                  <NextImage
                     src={userData?.image ? `${baseURL}${userData.image}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.name || 'U')}&background=random`}
                     height={120}
                     width={120}
                     alt={userData?.name || 'Customer'}
                     className='w-24 h-24 md:w-32 md:h-32 rounded-3xl object-cover border-4 border-white shadow-lg'
                   />
-                  <div className={`absolute -bottom-2 -end-2 w-6 h-6 rounded-full border-4 border-white ${userData?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+
                 </div>
                 <div className="flex-1 text-center sm:text-left space-y-3">
                   <div className="flex flex-col sm:flex-row items-center gap-3">
-                    <h2 className="text-2xl font-bold text-gray-900">{userData?.name || 'No Name'}</h2>
+                    <h2 className="text-2xl font-medium text-gray-900">{userData?.name || 'No Name'}</h2>
                     <Badge className="bg-[#D45D8A] text-white hover:bg-[#D45D8A] border-none px-3 py-1 font-bold rounded-full text-[10px] tracking-widest uppercase">
                       {totalVisitsCount > 20 ? 'GOLD TIER' : totalVisitsCount > 10 ? 'SILVER TIER' : 'BRONZE TIER'}
                     </Badge>
@@ -144,8 +150,8 @@ function VisitContent() {
 
           {/* Services Used */}
           <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
-            <CardHeader className="border-b border-gray-50 px-8 py-6">
-              <CardTitle className="text-xl font-bold text-gray-800">Services Used</CardTitle>
+            <CardHeader className="border-b border-gray-50 px-8 ">
+              <CardTitle className="text-xl font-medium text-gray-800">Services Used</CardTitle>
             </CardHeader>
             <CardContent className="p-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-8">
@@ -182,8 +188,8 @@ function VisitContent() {
         <div className="lg:col-span-5 space-y-8">
           {/* Billing & Points */}
           <Card className="border-none shadow-sm rounded-3xl bg-white overflow-hidden">
-            <CardHeader className="border-b border-gray-50 px-8 py-6">
-              <CardTitle className="text-xl font-bold text-gray-800">{t('session_details')}</CardTitle>
+            <CardHeader className="border-b border-gray-50 px-8 py-2">
+              <CardTitle className="text-xl font-medium text-gray-800">{t('session_details')}</CardTitle>
             </CardHeader>
             <CardContent className="p-8 space-y-6">
               <div className="space-y-2">
@@ -214,7 +220,7 @@ function VisitContent() {
                 <Button
                   onClick={handleConfirmVisit}
                   disabled={isApproving || !pendingVisit}
-                  className="w-full bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-bold text-lg py-8 rounded-2xl shadow-lg shadow-green-100 transition-all hover:translate-y-[-2px] active:translate-y-[0px]"
+                  className="w-full bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-medium text-lg py-7 rounded-2xl shadow-lg shadow-green-100 transition-all hover:translate-y-[-2px] active:translate-y-[0px]"
                 >
                   {isApproving ? t('confirming') : t('confirm_visit_btn')}
                 </Button>
@@ -226,7 +232,7 @@ function VisitContent() {
           {/* Recent Visits Section */}
           <section className="space-y-4">
             <div className='flex items-center justify-between px-2 pt-2'>
-              <h2 className="text-lg font-bold text-gray-800">{t('recent_activity')}</h2>
+              <h2 className="text-lg font-medium text-gray-800">{t('recent_activity')}</h2>
               <button
                 onClick={() => setShowAllHistory(!showAllHistory)}
                 className='text-xs font-bold uppercase tracking-wider text-[#D45D8A] hover:underline cursor-pointer'
@@ -274,11 +280,7 @@ function VisitContent() {
 
 export default function ConfirmCustomerVisit() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#A8D5BA]" />
-      </div>
-    }>
+    <Suspense fallback={<Loading />}>
       <VisitContent />
     </Suspense>
   );

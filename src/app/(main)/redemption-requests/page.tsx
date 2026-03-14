@@ -1,5 +1,6 @@
 "use client";
 
+import Loading from '@/components/common/Loading';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -179,9 +180,7 @@ const RedemptionQueue = () => {
         <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
           <div className="overflow-x-auto">
             {isLoading ? (
-              <div className="flex items-center justify-center p-16">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#7fa885]"></div>
-              </div>
+              <Loading />
             ) : filteredRedemptions.length === 0 ? (
               <div className="text-center py-16 text-gray-400 font-medium">
                 {t('no_redemption_requests')}
@@ -245,7 +244,7 @@ const RedemptionQueue = () => {
                           <div className="flex gap-2">
                             <Button
                               size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white"
+                              className="bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-bold"
                               onClick={() => handleApprove(item._id)}
                               disabled={isApproving}
                             >
@@ -273,7 +272,10 @@ const RedemptionQueue = () => {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleApprove(item._id)}>
+                              <DropdownMenuItem
+                                onClick={() => handleApprove(item._id)}
+                                className="focus:bg-[#A8D5BA] focus:text-gray-800 cursor-pointer font-bold uppercase text-[10px] tracking-widest"
+                              >
                                 {t('approve')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>

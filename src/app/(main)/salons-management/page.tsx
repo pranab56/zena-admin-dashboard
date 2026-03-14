@@ -1,5 +1,6 @@
 "use client";
 
+import Loading from "@/components/common/Loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -24,11 +25,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAllSalonQuery, useCreateSalonMutation } from "@/features/super_admin/salon/salonApi";
 import { cn } from "@/lib/utils";
-import { format, parse } from "date-fns";
+import { differenceInDays, format, isBefore } from "date-fns";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from 'next/link';
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
 import { useTranslation } from 'react-i18next';
 
 const SalonsManagement = () => {
@@ -39,6 +42,32 @@ const SalonsManagement = () => {
   const [endDate, setEndDate] = useState<Date>();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  // New salon form states
+  const [formData, setFormData] = useState({
+    businessName: "",
+    businessType: "Salon",
+    city: "",
+    subscriptionType: "basic",
+    phone: "",
+    email: "",
+    admin: "" // For storing user ID of admin
+  });
+
+  const { data: salonsRes, isLoading } = useAllSalonQuery({
+    searchTerm: searchTerm || undefined,
+    status: statusFilter !== "all" ? statusFilter : undefined,
+    startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
+    endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined,
+    page: currentPage,
+    limit: itemsPerPage
+  });
+
+  const [createSalon, { isLoading: isCreating }] = useCreateSalonMutation();
+
+  const salons = salonsRes?.data || [];
+  const meta = salonsRes?.meta;
+  const totalPages = meta?.totalPage || 1;
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -54,55 +83,36 @@ const SalonsManagement = () => {
     { label: t('expiring_soon'), value: "04", bg: "bg-[#F5F5F3]", valueColor: "text-[#D97706]" },
   ];
 
-  const filteredSalons = useMemo(() => {
-    const salons = [
-      { id: "SLN-9921", name: "Elite Hair & Spa", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Expired" },
-      { id: "SLN-9922", name: "Luxe Salon", start: "01-15-2025", expiry: "01-15-2026", remaining: "Expiring with 15 days", customers: "850", city: "Abu Dhabi", status: "Expired" },
-      { id: "SLN-9923", name: "Bella Spa", start: "05-20-2025", expiry: "05-20-2026", remaining: "320 days left", customers: "2100", city: "Sharjah", status: "Active" },
-      { id: "SLN-9924", name: "Glow Parlour", start: "03-10-2025", expiry: "03-10-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
-      { id: "SLN-9925", name: "Modern Cuts", start: "08-01-2025", expiry: "08-01-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
-      { id: "SLN-9926", name: "Royal Wellness", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Expired" },
-      { id: "SLN-9927", name: "Urban Chic", start: "12-12-2025", expiry: "12-12-2026", remaining: "Expiring with 7 days", customers: "1254", city: "Dubai", status: "Active" },
-      { id: "SLN-9928", name: "The Grooming Room", start: "10-05-2025", expiry: "10-05-2026", remaining: "200 days left", customers: "540", city: "Dubai", status: "Active" },
-      { id: "SLN-9929", name: "Silk & Smooth", start: "11-11-2025", expiry: "11-11-2026", remaining: "250 days left", customers: "1100", city: "Ajman", status: "Active" },
-      { id: "SLN-9000", name: "Oasis Beauty", start: "02-14-2025", expiry: "02-14-2026", remaining: "Expiring with 2 days", customers: "300", city: "Dubai", status: "Expired" },
-    ];
-
-    return salons.filter((salon) => {
-      const matchesSearch =
-        salon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        salon.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        salon.id.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesStatus = statusFilter === "all" || salon.status.toLowerCase() === statusFilter.toLowerCase();
-
-      let matchesDate = true;
-      if (startDate || endDate) {
-        const salonDate = parse(salon.start, "MM-dd-yyyy", new Date());
-        if (startDate && salonDate < startDate) matchesDate = false;
-        if (endDate && salonDate > endDate) matchesDate = false;
-      }
-
-      return matchesSearch && matchesStatus && matchesDate;
-    });
-  }, [searchTerm, statusFilter, startDate, endDate]);
-
-  const totalPages = Math.ceil(filteredSalons.length / itemsPerPage);
-  const paginatedSalons = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredSalons.slice(start, start + itemsPerPage);
-  }, [filteredSalons, currentPage]);
-
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
 
-  const handleSaveSalon = () => {
-    setShowAddModal(false);
-    setShowSuccessModal(true);
+  const handleSaveSalon = async () => {
+    try {
+      if (!newSalonStartDate || !newSalonExpiryDate) {
+        toast.error(t('dates_required', { defaultValue: 'Start and Expiry dates are required' }));
+        return;
+      }
+
+      const payload = {
+        ...formData,
+        startDate: newSalonStartDate.toISOString(),
+        expiryDate: newSalonExpiryDate.toISOString(),
+      };
+
+      const res = await createSalon(payload).unwrap();
+      if (res.success) {
+        setShowAddModal(false);
+        setShowSuccessModal(true);
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || t('failed_to_create_salon'));
+    }
   };
+
+  if (isLoading) return <Loading />;
 
   return (
     <div className="sm:px-6 lg:px-0 space-y-8 bg-white min-h-screen">
@@ -233,41 +243,51 @@ const SalonsManagement = () => {
               </tr>
             </TableHeader>
             <TableBody>
-              {paginatedSalons.length > 0 ? (
-                paginatedSalons.map((salon, i) => (
-                  <TableRow key={i} className="group hover:bg-gray-50/50 border-b border-gray-50 transition-colors relative">
-                    <TableCell className="py-5 ps-6">
-                      <p className="font-semibold text-gray-800 text-[15px]">{salon.name}</p>
-                      <p className="text-xs text-gray-400">ID: {salon.id}</p>
-                    </TableCell>
-                    <TableCell className="text-gray-700 font-medium text-[15px]">{salon.start}</TableCell>
-                    <TableCell className="text-gray-700 font-medium text-[15px]">{salon.expiry}</TableCell>
-                    <TableCell>
-                      <Badge className="bg-[#FDE6D2] text-[#D97706] hover:bg-[#FDE6D2] border-none px-4 py-1.5 font-medium rounded-lg shadow-none">
-                        {t(salon.remaining.toLowerCase().replace(/ /g, '_'), { defaultValue: salon.remaining })}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-gray-700 font-medium text-[15px]">{salon.customers}</TableCell>
-                    <TableCell className="text-gray-700 font-medium text-[15px]">{salon.city}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={`rounded-lg px-4 py-1.5 font-medium text-[13px] border-none shadow-none ${salon.status === 'Active'
-                          ? 'bg-[#D1EBD9] text-[#2F6B43] hover:bg-[#D1EBD9]'
-                          : 'bg-[#F9D8D8] text-[#D84C4C] hover:bg-[#F9D8D8]'
-                          }`}
-                      >
-                        {t(salon.status.toLowerCase())}
-                      </Badge>
-                    </TableCell>
+              {salons.length > 0 ? (
+                salons.map((salon: any, i: number) => {
+                  const expiryDate = new Date(salon.expiryDate);
+                  const isExpired = isBefore(expiryDate, new Date());
+                  const daysRemaining = differenceInDays(expiryDate, new Date());
 
-                    {/* Hover View Button Tab */}
-                    <Link href={`/salons-management/view`}><div className="absolute end-0 top-0 bottom-0 w-max hidden group-hover:flex items-center">
-                      <div className="bg-[#A8D5BA] text-gray-800 font-medium px-4 h-full flex items-center cursor-pointer rounded-s-md shadow-lg">
-                        {t('view')}
-                      </div>
-                    </div></Link>
-                  </TableRow>
-                ))
+                  return (
+                    <TableRow key={i} className="group hover:bg-gray-50/50 border-b border-gray-50 transition-colors relative">
+                      <TableCell className="py-5 ps-6 text-left">
+                        <p className="font-semibold text-gray-800 text-[15px]">{salon.businessName}</p>
+                        <p className="text-xs text-gray-400">ID: {salon.salonId?.slice(0, 12)}...</p>
+                      </TableCell>
+                      <TableCell className="text-gray-700 font-medium text-[15px]">{format(new Date(salon.startDate), "dd-MM-yyyy")}</TableCell>
+                      <TableCell className="text-gray-700 font-medium text-[15px]">{format(new Date(salon.expiryDate), "dd-MM-yyyy")}</TableCell>
+                      <TableCell>
+                        <Badge className={cn(
+                          "hover:bg-opacity-80 border-none px-4 py-1.5 font-medium rounded-lg shadow-none",
+                          daysRemaining <= 7 ? "bg-[#FDE6D2] text-[#D97706]" : "bg-green-100 text-green-700"
+                        )}>
+                          {daysRemaining > 0 ? `${daysRemaining} ${t('days_left')}` : t('expired')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-gray-700 font-medium text-[15px]">{salon.visitor || 0}</TableCell>
+                      <TableCell className="text-gray-700 font-medium text-[15px]">{salon.city}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className={`rounded-lg px-4 py-1.5 font-medium text-[13px] border-none shadow-none ${!isExpired
+                            ? 'bg-[#D1EBD9] text-[#2F6B43] hover:bg-[#D1EBD9]'
+                            : 'bg-[#F9D8D8] text-[#D84C4C] hover:bg-[#F9D8D8]'
+                            }`}
+                        >
+                          {!isExpired ? t('active') : t('expired')}
+                        </Badge>
+                      </TableCell>
+
+                      <Link href={`/salons-management/view?id=${salon._id}`}>
+                        <div className="absolute end-0 top-0 bottom-0 w-max hidden group-hover:flex items-center">
+                          <div className="bg-[#A8D5BA] text-gray-800 font-medium px-4 h-full flex items-center cursor-pointer rounded-s-md shadow-lg">
+                            {t('view')}
+                          </div>
+                        </div>
+                      </Link>
+                    </TableRow>
+                  );
+                })
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-gray-500">
@@ -284,9 +304,9 @@ const SalonsManagement = () => {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-10">
         <p className="text-sm text-gray-500 order-2 sm:order-1">
           {t('showing_results', {
-            start: filteredSalons.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0,
-            end: Math.min(currentPage * itemsPerPage, filteredSalons.length),
-            total: filteredSalons.length
+            start: salons.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0,
+            end: Math.min(currentPage * itemsPerPage, meta?.total || 0),
+            total: meta?.total || 0
           })}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2 order-1 sm:order-2">
@@ -345,18 +365,23 @@ const SalonsManagement = () => {
                   <Label className="text-gray-700 font-medium">{t('business_name')}</Label>
                   <Input
                     placeholder="Rg. Elgance Bonuty Spa"
+                    value={formData.businessName}
+                    onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                     className="bg-[#E9E9E7] border-none h-12 rounded-xl placeholder:text-gray-400 focus-visible:ring-0"
                   />
                 </div>
                 <div className="space-y-2 w-full">
                   <Label className="text-gray-700 font-medium">{t('business_type')}</Label>
-                  <Select onValueChange={() => setShowWarningModal(true)}>
+                  <Select
+                    value={formData.businessType}
+                    onValueChange={(val) => setFormData({ ...formData, businessType: val })}
+                  >
                     <SelectTrigger className="bg-[#E9E9E7] w-full py-6 border-none h-12 rounded-xl text-gray-500 focus:ring-0">
                       <SelectValue placeholder={t('select_type')} />
                     </SelectTrigger>
                     <SelectContent className="bg-[#D4A1AF] border-none text-gray-800">
-                      <SelectItem value="salon" className="focus:bg-[#C4919F]">{t('salon', { defaultValue: 'Salon' })}</SelectItem>
-                      <SelectItem value="spa" className="focus:bg-[#C4919F]">{t('spa', { defaultValue: 'Spa' })}</SelectItem>
+                      <SelectItem value="Salon" className="focus:bg-[#C4919F]">{t('salon', { defaultValue: 'Salon' })}</SelectItem>
+                      <SelectItem value="Spa" className="focus:bg-[#C4919F]">{t('spa', { defaultValue: 'Spa' })}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -368,6 +393,8 @@ const SalonsManagement = () => {
                 <div className="relative">
                   <Input
                     placeholder="Al Qouz Fourth,Dubai,UAE"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     className="bg-[#E9E9E7] border-none h-12 rounded-xl pe-10 focus-visible:ring-0"
                   />
                   <svg className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-500" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -381,7 +408,10 @@ const SalonsManagement = () => {
                 <h3 className="text-lg font-semibold text-gray-800">{t('subscription_plan')}</h3>
                 <div className="space-y-2">
                   <Label className="text-gray-700 font-medium text-sm">{t('subscription_type')}</Label>
-                  <Select>
+                  <Select
+                    value={formData.subscriptionType}
+                    onValueChange={(val) => setFormData({ ...formData, subscriptionType: val })}
+                  >
                     <SelectTrigger className="bg-[#E9E9E7] w-full py-6 border-none h-12 rounded-xl text-gray-500 focus:ring-0">
                       <SelectValue placeholder={t('select_type')} />
                     </SelectTrigger>
@@ -452,6 +482,8 @@ const SalonsManagement = () => {
                     <Label className="text-gray-700 font-medium text-sm">{t('phone')}</Label>
                     <Input
                       placeholder="+1 (555) 000 0000"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className="bg-[#E9E9E7] border-none h-12 rounded-xl focus-visible:ring-0"
                     />
                   </div>
@@ -459,9 +491,20 @@ const SalonsManagement = () => {
                     <Label className="text-gray-700 font-medium text-sm">{t('email')}</Label>
                     <Input
                       placeholder="contact@gmail.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="bg-[#E9E9E7] border-none h-12 rounded-xl focus-visible:ring-0"
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-gray-700 font-medium text-sm">{t('admin_id', { defaultValue: 'Admin ID' })}</Label>
+                  <Input
+                    placeholder="69993cd09b1557e5..."
+                    value={formData.admin}
+                    onChange={(e) => setFormData({ ...formData, admin: e.target.value })}
+                    className="bg-[#E9E9E7] border-none h-12 rounded-xl focus-visible:ring-0"
+                  />
                 </div>
               </div>
 
