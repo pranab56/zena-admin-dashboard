@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
-    role: ''
+    role: 'ADMIN'
   });
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errors, setErrors] = useState<{ email: string; password: string; role: string }>({
