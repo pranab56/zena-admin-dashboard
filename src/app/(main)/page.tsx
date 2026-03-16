@@ -1,6 +1,9 @@
 "use client";
+import { useMemo } from "react";
 
 import { useAllRedemptionRewardQuery, useDashboardQuery } from '@/features/admin/overview/overveiwApi';
+import { useGetAllNotificationQuery } from '@/features/notification/notificationApi';
+import { formatDistanceToNow } from 'date-fns';
 import { Gift, TrendingUp, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import MostActiveCustomers from '../../components/super-admin/dashboard/MostActiveCustomers';
@@ -14,6 +17,7 @@ const LoyaltyDashboard = () => {
   const { t } = useTranslation();
   const { data: apiResponse, isLoading: isDashboardLoading } = useDashboardQuery({});
   const { data: redemptionResponse, isLoading: isRedemptionLoading } = useAllRedemptionRewardQuery({});
+  const { data: notificationsRes, isLoading: isNotificationsLoading } = useGetAllNotificationQuery(undefined);
 
   const dashboardData = apiResponse?.data;
   const redemptions = redemptionResponse?.data;
@@ -90,31 +94,26 @@ const LoyaltyDashboard = () => {
     avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(item.userId?.name || 'U')}&background=random`
   })) || [];
 
-  const notificationsData: Notification[] = [
-    {
-      id: 1,
-      type: 'redemption',
-      message: t('notification_redemption', { defaultValue: 'New reward redemption request from Sarah Ahmed' }),
-      time: t('time_ago', { time: '5', unit: t('minutes'), defaultValue: '5 min ago' }),
-      icon: 'Gift'
-    },
-    {
-      id: 2,
-      type: 'visit',
-      message: t('notification_visit', { defaultValue: 'You have pending customer visits to confirm' }),
-      time: t('time_ago', { time: '5', unit: t('minutes'), defaultValue: '5 min ago' }),
-      icon: 'Bell'
-    },
-    {
-      id: 3,
-      type: 'visit',
-      message: t('notification_visit', { defaultValue: 'You have pending customer visits to confirm' }),
-      time: t('time_ago', { time: '5', unit: t('minutes'), defaultValue: '5 min ago' }),
-      icon: 'Bell'
-    }
-  ];
+  interface RawNotification {
+    _id: string;
+    notificationEvent?: string;
+    body: string;
+    createdAt: string;
+  }
 
-  if (isDashboardLoading || isRedemptionLoading) {
+  const notificationsData: Notification[] = useMemo(() => {
+    return (notificationsRes?.data || [])
+      .slice(0, 3)
+      .map((n: RawNotification, index: number) => ({
+        id: index + 1,
+        type: n.notificationEvent === 'PURCHASE_REWARD' ? 'redemption' : 'visit',
+        message: n.body,
+        time: formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }),
+        icon: n.notificationEvent === 'PURCHASE_REWARD' ? 'Gift' : 'Bell'
+      }));
+  }, [notificationsRes, t]);
+
+  if (isDashboardLoading || isRedemptionLoading || isNotificationsLoading) {
     return <div className="p-8 text-center text-gray-500">{t('loading_dashboard')}</div>;
   }
 

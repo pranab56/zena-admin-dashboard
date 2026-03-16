@@ -239,10 +239,10 @@ const ProfileSettings = () => {
                   <span className="bg-[#A8D5BA] text-gray-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-tighter">
                     {profileData?.role || 'ADMIN'}
                   </span>
-                  <span className={`flex items-center gap-1.5 text-xs font-medium ${profileData?.status === 'ACTIVE' || profileData?.isOnline ? 'text-green-600 bg-green-50' : 'text-amber-600 bg-amber-50'} px-3 py-1 rounded-full border border-current opacity-70`}>
+                  {/* <span className={`flex items-center gap-1.5 text-xs font-medium ${profileData?.status === 'ACTIVE' || profileData?.isOnline ? 'text-green-600 bg-green-50' : 'text-amber-600 bg-amber-50'} px-3 py-1 rounded-full border border-current opacity-70`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${profileData?.status === 'ACTIVE' || profileData?.isOnline ? 'bg-green-500' : 'bg-amber-500'}`}></span>
                     {profileData?.status || (profileData?.isOnline ? 'ONLINE' : 'OFFLINE')}
-                  </span>
+                  </span> */}
                 </div>
               </div>
             </div>
