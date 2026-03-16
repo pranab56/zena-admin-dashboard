@@ -12,6 +12,7 @@ import { Bell, ChevronDown, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useGetNotificationCountQuery } from '../../features/notification/notificationApi';
 import { useGetMyProfileQuery } from '../../features/profile/profileApi';
 
 interface HeaderProps {
@@ -22,12 +23,13 @@ const Header = ({ onMenuClick }: HeaderProps) => {
   const { t, i18n } = useTranslation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { data: profileRes } = useGetMyProfileQuery({});
+  const { data: countRes } = useGetNotificationCountQuery(undefined);
   const userData = profileRes?.data;
 
   const userName = userData?.name || "User";
   const userRole = userData?.role || t('super_admin');
   const userImage = userData?.image ? `${baseURL}/${userData.image}` : "";
-  const unreadCount = 3;
+  const unreadCount = countRes?.data || 0;
   const router = useRouter();
 
   const currentLangCode = i18n.language ? i18n.language.split('-')[0].toUpperCase() : 'EN';
@@ -97,17 +99,19 @@ const Header = ({ onMenuClick }: HeaderProps) => {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-6">
-            {/* Notification Bell */}
-            <div className="relative">
-              <button onClick={() => router.push("/notifications")} className="relative flex items-center cursor-pointer justify-center transition-colors">
-                <Bell className="h-6 w-6 text-gray-700 fill-gray-700" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-2.5 -end-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-            </div>
+            {/* Notification Bell - Hidden for Super Admn */}
+            {userData?.role !== 'superadmin' && userData?.role !== 'SUPER_ADMIN' && (
+              <div className="relative">
+                <button onClick={() => router.push("/notifications")} className="relative flex items-center cursor-pointer justify-center transition-colors">
+                  <Bell className="h-6 w-6 text-gray-700 fill-gray-700" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-2.5 -end-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
 
             {/* Profile Section */}
             <div className="relative">

@@ -26,77 +26,91 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  useAllSalonAnalysisQuery,
+  useSalonAnalysisDetailsQuery,
+  useTopServicesQuery
+} from '@/features/super_admin/analysis/analysisApi';
 import { cn } from "@/lib/utils";
 import {
   Calendar,
   ChevronLeft,
   ChevronRight,
   Clock,
+  Filter,
+  Loader2,
   Search,
   User
-} from "lucide-react";
-import { useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface Salon {
-  id: number;
-  name: string;
+  _id: string;
+  salonId: string;
+  businessName: string;
   city: string;
-  visits: number;
-  customers: number;
-  points: string;
-  status: string;
+  activeStatus: string;
+  subscriptionType: string;
+  expiryDate: string;
+  totalVisits: number;
+  customersCount: number;
+  totalPoints: number;
 }
 
-// Mock Data
-const analyticsData: Salon[] = [
-  { id: 1, name: "Elite Hair & Spa", city: "New York", visits: 1254, customers: 1245, points: "$1245.00", status: "High Performing" },
-  { id: 2, name: "Luxe Beauty", city: "Los Angeles", visits: 980, customers: 850, points: "$850.00", status: "Average" },
-  { id: 3, name: "Glow Salon", city: "Chicago", visits: 450, customers: 300, points: "$300.00", status: "Low Performing" },
-  { id: 4, name: "Royal Spa", city: "Miami", visits: 2100, customers: 1800, points: "$1800.00", status: "High Performing" },
-  { id: 5, name: "Modern Cuts", city: "Houston", visits: 1100, customers: 950, points: "$950.00", status: "Average" },
-  { id: 6, name: "Urban Chic", city: "Seattle", visits: 600, customers: 500, points: "$500.00", status: "Average" },
-  { id: 7, name: "Bella Spa", city: "San Francisco", visits: 1500, customers: 1300, points: "$1300.00", status: "High Performing" },
-  { id: 8, name: "Silk & Smooth", city: "Boston", visits: 300, customers: 200, points: "$200.00", status: "Low Performing" },
-  { id: 9, name: "The Grooming Room", city: "Dallas", visits: 1200, customers: 1100, points: "$1100.00", status: "High Performing" },
-  { id: 10, name: "Oasis Beauty", city: "Phoenix", visits: 800, customers: 700, points: "$700.00", status: "Average" },
-];
-
-const serviceUsageRanking = [
-  { name: "Haircut", bookings: 1234, progress: 40 },
-  { name: "Hair Color/ Treatment", bookings: 1234, progress: 35 },
-  { name: "Nail Art", bookings: 1234, progress: 30 },
-  { name: "Pedicure", bookings: 1234, progress: 25 },
-  { name: "Manicure", bookings: 1234, progress: 20 },
-];
+interface TopService {
+  serviceName: string;
+  totalVisits: number;
+  branchCount: number;
+  percentage: number;
+}
 
 export default function Analytics() {
   const { t } = useTranslation();
-  const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
+  const [selectedSalonId, setSelectedSalonId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
-  const filteredData = useMemo(() => {
-    return analyticsData.filter((salon) => {
-      const matchesSearch =
-        salon.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  // Fetch all salons analysis - use a higher limit for client-side filtering
+  const { data: allSalonsData, isLoading: isAllSalonsLoading } = useAllSalonAnalysisQuery({
+    page: 1,
+    limit: 1000,
+  });
+
+  // Fetch top services ranking
+  const { data: topServicesData } = useTopServicesQuery(undefined);
+
+  // Fetch salon details when one is selected
+  const { data: salonDetailsData, isFetching: isDetailsLoading } = useSalonAnalysisDetailsQuery(selectedSalonId, {
+    skip: !selectedSalonId
+  });
+
+  const allSalons = useMemo(() => allSalonsData?.data?.data || [], [allSalonsData]);
+
+  // Client-side filtering
+  const filteredSalons = useMemo(() => {
+    return allSalons.filter((salon: Salon) => {
+      const matchesSearch = !searchTerm ||
+        salon.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         salon.city.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesStatus =
-        statusFilter === "all" ||
-        salon.status.toLowerCase() === statusFilter.toLowerCase();
+      const matchesStatus = statusFilter === "all" || salon.activeStatus === statusFilter;
 
       return matchesSearch && matchesStatus;
     });
-  }, [searchTerm, statusFilter]);
+  }, [allSalons, searchTerm, statusFilter]);
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = useMemo(() => {
+  // Client-side pagination
+  const totalResults = filteredSalons.length;
+  const totalPages = Math.ceil(totalResults / itemsPerPage);
+  const paginatedSalons = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return filteredData.slice(start, start + itemsPerPage);
-  }, [filteredData, currentPage]);
+    return filteredSalons.slice(start, start + itemsPerPage);
+  }, [filteredSalons, currentPage]);
+
+  const topServices = topServicesData?.data || [];
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -107,47 +121,44 @@ export default function Analytics() {
   return (
     <div className="space-y-8">
       {/* Header Section */}
-      <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-800">{t('business_analytics')}</h1>
-        <p className="text-gray-500 mt-1">{t('business_analytics_desc')}</p>
-      </div>
-
-      {/* Filters Section */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute start-3 top-1/2 -transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder={t('search_analytics_placeholder')}
-            className="ps-10 h-12 border-gray-200 rounded-lg bg-white focus-visible:ring-0"
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-gray-100 shadow-sm text-start">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">{t('business_analytics_header')}</h1>
+          <p className="text-gray-500">{t('track_monitor_performance')}</p>
         </div>
-        <div className="w-full md:w-64">
-          <Select value={statusFilter} onValueChange={(val) => {
-            setStatusFilter(val);
-            setCurrentPage(1);
-          }}>
-            <SelectTrigger className="w-full h-12 border-gray-200 py-[23px] rounded-lg bg-white text-gray-500 focus:ring-0">
-              <SelectValue placeholder={t('status')} />
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder={t('search_salons')}
+              className="pl-10 h-10 bg-gray-50 border-gray-200 rounded-lg focus:ring-[#A8D5BA]"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[160px] h-10 bg-gray-50 border-gray-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-400" />
+                <SelectValue placeholder={t('performance')} />
+              </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t('all_status')}</SelectItem>
-              <SelectItem value="High Performing">{t('high_performing')}</SelectItem>
-              <SelectItem value="Average">{t('average')}</SelectItem>
-              <SelectItem value="Low Performing">{t('low_performing')}</SelectItem>
+              <SelectItem value="all">{t('all')}</SelectItem>
+              <SelectItem value="ACTIVE">Active</SelectItem>
+              <SelectItem value="EXPIRED">Expired</SelectItem>
+              <SelectItem value="PENDING">Pending</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {/* Table Section */}
+      {/* Main Table Section */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-[#F1F8F1]">
+          <TableHeader className="bg-gray-50/50">
             <TableRow className="hover:bg-transparent border-none">
               <TableHead className="py-4 font-semibold text-start text-[#828282]">{t('salon_name_header')}</TableHead>
               <TableHead className="py-4 font-semibold text-start text-[#828282]">{t('city')}</TableHead>
@@ -159,153 +170,162 @@ export default function Analytics() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedData.length > 0 ? (
-              paginatedData.map((salon) => (
-                <TableRow key={salon.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                  <TableCell className="py-4 font-medium">{salon.name}</TableCell>
+            {isAllSalonsLoading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  <div className="flex justify-center items-center gap-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-[#A8D5BA]" />
+                    <span>{t('loading')}...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : paginatedSalons.length > 0 ? (
+              paginatedSalons.map((salon: Salon) => (
+                <TableRow key={salon._id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                  <TableCell className="py-4 font-medium">{salon.businessName}</TableCell>
                   <TableCell className="py-4 text-[#4A4A4A]">{salon.city}</TableCell>
-                  <TableCell className="py-4 text-[#4A4A4A]">{salon.visits}</TableCell>
-                  <TableCell className="py-4 text-[#4A4A4A]">{salon.customers}</TableCell>
-                  <TableCell className="py-4 text-[#4A4A4A]">{salon.points}</TableCell>
+                  <TableCell className="py-4 text-[#4A4A4A]">{salon.totalVisits}</TableCell>
+                  <TableCell className="py-4 text-[#4A4A4A]">{salon.customersCount}</TableCell>
+                  <TableCell className="py-4 text-[#4A4A4A]">{salon.totalPoints}</TableCell>
                   <TableCell className="py-4">
                     <Badge className={cn(
-                      "border-none font-medium px-4 py-1 rounded-full shadow-none",
-                      salon.status === "High Performing" ? "bg-[#E6F4EA] text-[#2E7D32] hover:bg-[#E6F4EA]" :
-                        salon.status === "Average" ? "bg-[#FFF4E5] text-[#B76E00] hover:bg-[#FFF4E5]" :
-                          "bg-[#FFEBEE] text-[#C62828] hover:bg-[#FFEBEE]"
+                      "border-none font-medium px-4 py-1 rounded-full shadow-none capitalize",
+                      salon.activeStatus === "ACTIVE" ? "bg-[#E6F4EA] text-[#2E7D32] hover:bg-[#E6F4EA]" :
+                        salon.activeStatus === "EXPIRED" ? "bg-[#FFEBEE] text-[#C62828] hover:bg-[#FFEBEE]" :
+                          "bg-[#FFF4E5] text-[#B76E00] hover:bg-[#FFF4E5]"
                     )}>
-                      {salon.status === "High Performing" ? t('high_performing') : salon.status === "Average" ? t('average') : t('low_performing')}
+                      {salon.activeStatus?.toLowerCase() || ""}
                     </Badge>
                   </TableCell>
                   <TableCell className="py-4">
-                    <Sheet>
+                    <Sheet onOpenChange={(open) => !open && setSelectedSalonId(null)}>
                       <SheetTrigger asChild>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-[#A8D5BA] hover:text-[#82C09A] hover:bg-[#F1F8F1] font-medium"
-                          onClick={() => setSelectedSalon(salon)}
+                          onClick={() => setSelectedSalonId(salon._id)}
                         >
                           {t('view_details')}
                         </Button>
                       </SheetTrigger>
 
-                      {/* Sheet Content Implementation */}
                       <SheetContent className="sm:max-w-md overflow-y-auto px-4">
-                        <SheetHeader className="text-start space-y-0  px-2">
+                        <SheetHeader className="text-start space-y-0 px-2">
                           <SheetTitle className="text-2xl font-bold bg-white text-gray-800">
-                            {selectedSalon?.name || "Elite Hair & Spa"}
+                            {salon.businessName}
                           </SheetTitle>
-                          <p className="text-gray-500 font-medium">
-                            {selectedSalon?.city || ""} - {selectedSalon?.status === "High Performing" ? t('high_performing') : selectedSalon?.status === "Average" ? t('average') : t('low_performing')}
+                          <p className="text-gray-500 font-medium capitalize">
+                            {salon.city} - {salon.activeStatus?.toLowerCase() || ""}
                           </p>
                         </SheetHeader>
 
-                        <div className="space-y-8 mt-6">
-                          {/* Stat Cards */}
-                          <div className="grid grid-cols-4 gap-3">
-                            <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
-                              <p className="text-xl font-bold">$1,240</p>
-                              <p className="text-[10px] text-gray-400 leading-tight">{t('monthly_visit_freq')}</p>
-                            </div>
-                            <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
-                              <p className="text-xl font-bold">$1,440</p>
-                              <p className="text-[10px] text-gray-400 leading-tight">{t('monthly_avg_visit_freq')}</p>
-                            </div>
-                            <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
-                              <p className="text-xl font-bold">$32,100</p>
-                              <p className="text-[10px] text-gray-400 leading-tight">{t('avg_monthly_revenue')}</p>
-                            </div>
-                            <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
-                              <p className="text-xl font-bold">420</p>
-                              <p className="text-[10px] text-gray-400 leading-tight">{t('customers_last_30_days')}</p>
-                            </div>
+                        {isDetailsLoading ? (
+                          <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                            <Loader2 className="h-8 w-8 animate-spin text-[#A8D5BA]" />
+                            <p className="text-gray-500">{t('loading_details')}...</p>
                           </div>
-
-                          {/* Revenue Chart - Custom implementation to match visual */}
-                          <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-gray-800">{t('daily_revenue')} <span className="text-gray-400 font-normal">{t('last_30_days')}</span></h3>
-                            <div className="h-32 flex items-end gap-1.5 px-2">
-                              {[40, 60, 50, 80, 55, 65, 75, 90, 60, 65, 55, 78, 85, 60, 65, 70].map((h, i) => (
-                                <div
-                                  key={i}
-                                  className={`w-full rounded-t-sm ${i === 7 ? 'bg-[#A8D5BA]' : 'bg-[#E8F5E9] hover:bg-[#A8D5BA] transition-colors cursor-pointer'}`}
-                                  style={{ height: `${h}%` }}
-                                />
-                              ))}
+                        ) : salonDetailsData?.data ? (
+                          <div className="space-y-8 mt-6">
+                            {/* Stat Cards */}
+                            <div className="grid grid-cols-4 gap-3">
+                              <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
+                                <p className="text-xl font-bold">{salonDetailsData.data.metrics.monthlyVisitFreq}</p>
+                                <p className="text-[10px] text-gray-400 leading-tight">{t('monthly_visit_freq')}</p>
+                              </div>
+                              <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
+                                <p className="text-xl font-bold">{salonDetailsData.data.metrics.monthlyAvgVisitFreq}</p>
+                                <p className="text-[10px] text-gray-400 leading-tight">{t('monthly_avg_visit_freq')}</p>
+                              </div>
+                              <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
+                                <p className="text-xl font-bold">${salonDetailsData.data.metrics.avgMonthlyRevenue}</p>
+                                <p className="text-[10px] text-gray-400 leading-tight">{t('avg_monthly_revenue')}</p>
+                              </div>
+                              <div className="bg-white border border-gray-100 rounded-xl p-3 text-center shadow-sm">
+                                <p className="text-xl font-bold">{salonDetailsData.data.metrics.customersInLast30Days}</p>
+                                <p className="text-[10px] text-gray-400 leading-tight">{t('customers_last_30_days')}</p>
+                              </div>
                             </div>
-                            <div className="flex justify-between text-[10px] text-gray-400 px-2">
-                              <span>1.01</span>
-                              <span>1.50</span>
-                              <span>9.02</span>
-                              <span>1.05</span>
-                              <span>11.46</span>
-                              <span>12.90</span>
-                              <span>17.50</span>
-                              <span>12.23</span>
-                              <span>15.30</span>
-                            </div>
-                          </div>
 
-                          {/* Top Performing Service Overview */}
-                          <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-gray-800">{t('top_performing_service')}</h3>
+                            {/* Revenue Chart */}
                             <div className="space-y-4">
-                              {[
-                                { label: 'Haircut', val: 40 },
-                                { label: 'Coloring', val: 30 },
-                                { label: 'Manicure', val: 20 },
-                                { label: 'Facial', val: 10 }
-                              ].map((item) => (
-                                <div key={item.label} className="flex items-center gap-4">
-                                  <span className="text-sm text-gray-600 w-20">{t(item.label.toLowerCase().replace(/ /g, '_'))}</span>
-                                  <div className="flex-1 h-2 bg-gray-50 rounded-full overflow-hidden">
+                              <h3 className="text-sm font-semibold text-gray-800">{t('daily_revenue')} <span className="text-gray-400 font-normal">{t('last_30_days')}</span></h3>
+                              <div className="h-32 flex items-end gap-1.5 px-2">
+                                {salonDetailsData.data.dailyRevenue.map((item: { date: string; revenue: number }, i: number) => {
+                                  const maxRevenue = Math.max(...salonDetailsData.data.dailyRevenue.map((d: { revenue: number }) => d.revenue), 1);
+                                  const height = (item.revenue / maxRevenue) * 100;
+                                  return (
                                     <div
-                                      className="h-full bg-[#A8D5BA] rounded-full"
-                                      style={{ width: `${item.val * 2}%` }} // Adjusted for visual representation
-                                    />
-                                  </div>
-                                  <span className="text-sm text-[#A8D5BA] font-medium">{item.val}%</span>
-                                </div>
-                              ))}
+                                      key={i}
+                                      className={`w-full rounded-t-sm group relative ${item.revenue > 0 ? 'bg-[#A8D5BA]' : 'bg-[#E8F5E9] hover:bg-[#A8D5BA] transition-colors cursor-pointer'}`}
+                                      style={{ height: `${Math.max(height, 5)}%` }}
+                                    >
+                                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-10">
+                                        {item.date}: ${item.revenue}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <div className="flex justify-between text-[10px] text-gray-400 px-2 overflow-hidden">
+                                <span>{salonDetailsData.data.dailyRevenue[0]?.date}</span>
+                                <span>{salonDetailsData.data.dailyRevenue[Math.floor(salonDetailsData.data.dailyRevenue.length / 2)]?.date}</span>
+                                <span>{salonDetailsData.data.dailyRevenue[salonDetailsData.data.dailyRevenue.length - 1]?.date}</span>
+                              </div>
                             </div>
-                          </div>
 
-                          {/* Insights */}
-                          <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-gray-800">{t('insights')}</h3>
+                            {/* Top Performing Service Overview */}
                             <div className="space-y-4">
-                              <div className="flex items-center gap-3">
-                                <div className="p-2 border border-gray-100 rounded-lg">
-                                  <Calendar className="w-4 h-4 text-gray-400" />
-                                </div>
-                                <p className="text-sm text-gray-600">{t('best_day')} <span className="font-bold text-gray-800">{t('friday')}</span></p>
+                              <h3 className="text-sm font-semibold text-gray-800">{t('top_performing_service')}</h3>
+                              <div className="space-y-4">
+                                {salonDetailsData.data.topPerformingServices.map((item: { name: string; percentage: number }) => (
+                                  <div key={item.name} className="flex items-center gap-4">
+                                    <span className="text-sm text-gray-600 w-24 truncate">{item.name}</span>
+                                    <div className="flex-1 h-2 bg-gray-50 rounded-full overflow-hidden">
+                                      <div
+                                        className="h-full bg-[#A8D5BA] rounded-full"
+                                        style={{ width: `${item.percentage}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-sm text-[#A8D5BA] font-medium">{item.percentage}%</span>
+                                  </div>
+                                ))}
+                                {salonDetailsData.data.topPerformingServices.length === 0 && (
+                                  <p className="text-sm text-gray-400">{t('no_services_found')}</p>
+                                )}
                               </div>
-                              <div className="flex items-center gap-3">
-                                <div className="p-2 border border-gray-100 rounded-lg">
-                                  <Clock className="w-4 h-4 text-gray-400" />
+                            </div>
+
+                            {/* Insights */}
+                            <div className="space-y-4">
+                              <h3 className="text-sm font-semibold text-gray-800">{t('insights')}</h3>
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 border border-gray-100 rounded-lg">
+                                    <Calendar className="w-4 h-4 text-gray-400" />
+                                  </div>
+                                  <p className="text-sm text-gray-600">{t('best_day')} <span className="font-bold text-gray-800">{salonDetailsData.data.insights.bestDay}</span></p>
                                 </div>
-                                <p className="text-sm text-gray-600">{t('slowest_day')} <span className="font-bold text-gray-800">{t('monday')}</span></p>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <div className="p-2 border border-gray-100 rounded-lg">
-                                  <User className="w-4 h-4 text-gray-400" />
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 border border-gray-100 rounded-lg">
+                                    <Clock className="w-4 h-4 text-gray-400" />
+                                  </div>
+                                  <p className="text-sm text-gray-600">{t('slowest_day')} <span className="font-bold text-gray-800">{salonDetailsData.data.insights.slowestDay}</span></p>
                                 </div>
-                                <p className="text-sm text-gray-600 font-medium">{t('avg_customer_spend')}</p>
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 border border-gray-100 rounded-lg">
+                                    <User className="w-4 h-4 text-gray-400" />
+                                  </div>
+                                  <p className="text-sm text-gray-600 font-medium">{t('avg_customer_spend')}: <span className="font-bold text-gray-800">${salonDetailsData.data.insights.avgCustomerSpend}</span></p>
+                                </div>
                               </div>
                             </div>
                           </div>
-
-                          {/* Actions */}
-                          <div className="flex gap-4 pt-4 pb-8">
-                            <Button variant="outline" className="flex-1 h-12 rounded-xl border-gray-200">
-                              {t('export_pdf')}
-                            </Button>
-                            <Button className="flex-1 h-12 rounded-xl bg-[#A8D5BA] hover:bg-[#82C09A] border-none text-gray-800 shadow-none">
-                              {t('open_full_report')}
-                            </Button>
+                        ) : (
+                          <div className="flex items-center justify-center py-20">
+                            <p className="text-gray-500">{t('select_salon_to_view_details')}</p>
                           </div>
-                        </div>
+                        )}
                       </SheetContent>
                     </Sheet>
                   </TableCell>
@@ -321,10 +341,14 @@ export default function Analytics() {
           </TableBody>
         </Table>
 
-        {/* Pagination Section */}
         <div className="p-4 border-t border-gray-50 flex items-center justify-between">
           <p className="text-sm text-gray-500">
-            {t('showing_results', { start: filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0, end: Math.min(currentPage * itemsPerPage, filteredData.length), total: filteredData.length, defaultValue: `Showing ${filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to ${Math.min(currentPage * itemsPerPage, filteredData.length)} of ${filteredData.length} results` })}
+            {t('showing_results', {
+              start: totalResults > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0,
+              end: Math.min(currentPage * itemsPerPage, totalResults),
+              total: totalResults,
+              defaultValue: `Showing ${totalResults > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to ${Math.min(currentPage * itemsPerPage, totalResults)} of ${totalResults} results`
+            })}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -372,20 +396,24 @@ export default function Analytics() {
         <p className="text-sm text-gray-400 mb-6">{t('frequency_all_branches')}</p>
 
         <div className="space-y-6">
-          {serviceUsageRanking.map((service) => (
-            <div key={service.name} className="space-y-2">
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-medium text-gray-700">{t(service.name.toLowerCase().replace(/[\/ ]/g, '_'))}</span>
-                <span className="text-gray-400">{t('bookings_count', { count: service.bookings })}</span>
+          {topServices.length > 0 ? (
+            topServices.map((service: TopService) => (
+              <div key={service.serviceName} className="space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-medium text-gray-700">{service.serviceName}</span>
+                  <span className="text-gray-400">{t('visits_count', { count: service.totalVisits, defaultValue: `${service.totalVisits} ${t('visits')}` })}</span>
+                </div>
+                <div className="h-2 w-full bg-[#F5F5F5] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[#A8D5BA] rounded-full"
+                    style={{ width: `${service.percentage}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-2 w-full bg-[#F5F5F5] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[#A8D5BA] rounded-full"
-                  style={{ width: `${service.progress}%` }}
-                />
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-sm text-gray-400 text-center py-4">{t('no_data')}</p>
+          )}
         </div>
       </Card>
     </div>

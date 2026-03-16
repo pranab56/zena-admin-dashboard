@@ -29,6 +29,14 @@ export const salonApi = baseApi.injectEndpoints({
       invalidatesTags: ["Salons"]
     }),
 
+    salonCard: builder.query({
+      query: () => ({
+        url: "/salon/salon-menagement",
+        method: "GET",
+      }),
+      providesTags: ["Salons"]
+    }),
+
   }),
 });
 
@@ -36,5 +44,6 @@ export const salonApi = baseApi.injectEndpoints({
 export const {
   useAllSalonQuery,
   useSalonDetailsQuery,
-  useCreateSalonMutation
+  useCreateSalonMutation,
+  useSalonCardQuery
 } = salonApi;

@@ -1,109 +1,72 @@
 'use client';
 
+import Loading from '@/components/common/Loading';
 import { Input } from '@/components/ui/input';
+import { useGetAllNotificationQuery, useReadNotificationQuery } from '@/features/notification/notificationApi';
+import { useGetMyProfileQuery } from '@/features/profile/profileApi';
+import { formatDistanceToNow } from 'date-fns';
 import { Bell, CheckCircle2, CreditCard, Search } from 'lucide-react';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface Notification {
-  id: number;
-  type: 'redemption' | 'visit';
-  message: string;
-  timestamp: string;
-  isRead: boolean;
+  _id: string;
+  title: string;
+  body: string;
+  read: boolean;
+  createdAt: string;
+  notificationEvent?: string;
 }
 
 const NotificationsPage = () => {
   const { t } = useTranslation();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'read'>('all');
+  const [readingId, setReadingId] = useState<string | null>(null);
 
-  const [notifications] = useState<Notification[]>([
-    {
-      id: 1,
-      type: 'redemption',
-      message: 'New reward redemption request from Sarah Ahmed',
-      timestamp: '5 min ago',
-      isRead: false,
-    },
-    {
-      id: 2,
-      type: 'redemption',
-      message: 'New reward redemption request from Sarah Ahmed',
-      timestamp: '5 min ago',
-      isRead: false,
-    },
-    {
-      id: 3,
-      type: 'visit',
-      message: 'You have pending customer visits to confirm',
-      timestamp: '5 min ago',
-      isRead: true,
-    },
-    {
-      id: 4,
-      type: 'visit',
-      message: 'You have pending customer visits to confirm',
-      timestamp: '5 min ago',
-      isRead: true,
-    },
-    {
-      id: 5,
-      type: 'redemption',
-      message: 'New reward redemption request from Sarah Ahmed',
-      timestamp: '5 min ago',
-      isRead: true,
-    },
-    {
-      id: 6,
-      type: 'visit',
-      message: 'You have pending customer visits to confirm',
-      timestamp: '5 min ago',
-      isRead: true,
-    },
-    {
-      id: 7,
-      type: 'visit',
-      message: 'You have pending customer visits to confirm',
-      timestamp: '5 min ago',
-      isRead: true,
-    },
-    {
-      id: 8,
-      type: 'redemption',
-      message: 'New reward redemption request from Sarah Ahmed',
-      timestamp: '5 min ago',
-      isRead: true,
-    },
-    {
-      id: 9,
-      type: 'visit',
-      message: 'You have pending customer visits to confirm',
-      timestamp: '5 min ago',
-      isRead: true,
-    },
-    {
-      id: 10,
-      type: 'visit',
-      message: 'You have pending customer visits to confirm',
-      timestamp: '5 min ago',
-      isRead: true,
-    },
-  ]);
+  const { data: profileRes, isLoading: isProfileLoading } = useGetMyProfileQuery(undefined);
+  const { data: notificationsRes, isLoading: isNotifLoading, refetch } = useGetAllNotificationQuery(undefined);
 
-  const filteredNotifications = notifications.filter(notification => {
-    const matchesSearch = notification.message.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTab =
-      activeTab === 'all' ? true :
-        activeTab === 'unread' ? !notification.isRead :
-          notification.isRead;
+  // Protect page from Super Admin
+  useEffect(() => {
+    if (profileRes?.data) {
+      const role = profileRes.data.role;
+      if (role === 'superadmin' || role === 'SUPER_ADMIN') {
+        router.push('/');
+      }
+    }
+  }, [profileRes, router]);
 
-    return matchesSearch && matchesTab;
-  });
+  // This query triggers when readingId is set
+  const { } = useReadNotificationQuery(readingId, { skip: !readingId });
 
+  const notifications = useMemo(() => notificationsRes?.data || [], [notificationsRes]);
   const totalCount = notifications.length;
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-  const readCount = notifications.filter(n => n.isRead).length;
+  const unreadCount = notifications.filter((n: Notification) => !n.read).length;
+  const readCount = notifications.filter((n: Notification) => n.read).length;
+
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((notification: Notification) => {
+      const matchesSearch = notification.body.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        notification.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesTab =
+        activeTab === 'all' ? true :
+          activeTab === 'unread' ? !notification.read :
+            notification.read;
+
+      return matchesSearch && matchesTab;
+    });
+  }, [notifications, searchQuery, activeTab]);
+
+  const handleRead = (id: string) => {
+    setReadingId(id);
+    // Give it a brief moment to process the query, then refresh the list
+    setTimeout(() => {
+      refetch();
+    }, 500);
+  };
 
   const getTabLabel = (tab: 'all' | 'unread' | 'read') => {
     switch (tab) {
@@ -115,6 +78,8 @@ const NotificationsPage = () => {
         return `${t('read')} (${readCount})`;
     }
   };
+
+  if (isProfileLoading || isNotifLoading) return <Loading />;
 
   return (
     <div className="">
@@ -146,78 +111,58 @@ const NotificationsPage = () => {
 
         {/* Tabs */}
         <div className="flex gap-8 mb-6 border-b border-gray-300">
-          <button
-            onClick={() => setActiveTab('all')}
-            className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === 'all'
-              ? 'text-gray-900'
-              : 'text-gray-500 hover:text-gray-700'
-              }`}
-          >
-            {getTabLabel('all')}
-            {activeTab === 'all' && (
-              <div className="absolute bottom-0 start-0 end-0 h-0.5 bg-gray-900" />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('unread')}
-            className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === 'unread'
-              ? 'text-gray-900'
-              : 'text-gray-500 hover:text-gray-700'
-              }`}
-          >
-            {getTabLabel('unread')}
-            {activeTab === 'unread' && (
-              <div className="absolute bottom-0 start-0 end-0 h-0.5 bg-gray-900" />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab('read')}
-            className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === 'read'
-              ? 'text-gray-900'
-              : 'text-gray-500 hover:text-gray-700'
-              }`}
-          >
-            {getTabLabel('read')}
-            {activeTab === 'read' && (
-              <div className="absolute bottom-0 start-0 end-0 h-0.5 bg-gray-900" />
-            )}
-          </button>
+          {(['all', 'unread', 'read'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-3 text-sm font-medium transition-colors relative ${activeTab === tab
+                ? 'text-gray-900'
+                : 'text-gray-500 hover:text-gray-700'
+                }`}
+            >
+              {getTabLabel(tab)}
+              {activeTab === tab && (
+                <div className="absolute bottom-0 start-0 end-0 h-0.5 bg-gray-900" />
+              )}
+            </button>
+          ))}
         </div>
 
         {/* Notifications List */}
         <div className="space-y-0">
-          {filteredNotifications.map((notification) => (
+          {filteredNotifications.map((notification: Notification) => (
             <div
-              key={notification.id}
+              key={notification._id}
+              onClick={() => handleRead(notification._id)}
               className="bg-white border-b border-gray-200 p-4 hover:bg-gray-50 transition-colors cursor-pointer flex items-center gap-4"
             >
               {/* Icon */}
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${notification.type === 'redemption'
+                className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${notification.notificationEvent === 'PURCHASE_REWARD'
                   ? 'bg-green-100'
-                  : 'bg-green-100'
+                  : 'bg-blue-100'
                   }`}
               >
-                {notification.type === 'redemption' ? (
+                {notification.notificationEvent === 'PURCHASE_REWARD' ? (
                   <CreditCard className="w-5 h-5 text-green-600" />
                 ) : (
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <CheckCircle2 className="w-5 h-5 text-blue-600" />
                 )}
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <p className="text-gray-900 text-sm font-normal">
-                  {t(notification.message.toLowerCase().replace(/ /g, '_'))}
+                  {notification.body}
                 </p>
               </div>
 
               {/* Timestamp and Indicator */}
               <div className="flex items-center gap-3 flex-shrink-0">
-                <span className="text-gray-500 text-sm">
-                  {notification.timestamp}
+                <span className="text-gray-500 text-sm text-end">
+                  {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                 </span>
-                {!notification.isRead && (
+                {!notification.read && (
                   <div className="w-2 h-2 rounded-full bg-red-500" />
                 )}
               </div>

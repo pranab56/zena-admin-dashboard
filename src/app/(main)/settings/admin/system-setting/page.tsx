@@ -3,14 +3,9 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { useSystemSettingMutation } from '@/features/super_admin/settings/settingsApi';
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 const SystemConfigurationPage = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +15,8 @@ const SystemConfigurationPage = () => {
     minPasswordLength: '8',
   });
 
+  const [updateSettings, { isLoading }] = useSystemSettingMutation();
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -27,24 +24,29 @@ const SystemConfigurationPage = () => {
     }));
   };
 
-  const handleSave = () => {
-    console.log('Saving changes:', formData);
-    // Add your save logic here
+  const handleSave = async () => {
+    try {
+      const payload = {
+        platformName: formData.platformName,
+        supportEmail: formData.supportEmail,
+        passwordLength: Number(formData.minPasswordLength),
+        ruleType: "globalRules"
+      };
+
+      const res = await updateSettings(payload).unwrap();
+      if (res.success) {
+        toast.success(res.message || 'Settings updated successfully');
+      }
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      toast.error(error?.data?.message || 'Failed to update settings');
+    }
   };
 
   const handleCancel = () => {
     console.log('Cancelling changes');
     // Add your cancel logic here
   };
-
-  const timezones = [
-    'GMT/UTC (UTC+04:00)',
-    'GMT/UTC (UTC+00:00)',
-    'EST (UTC-05:00)',
-    'PST (UTC-08:00)',
-    'IST (UTC+05:30)',
-    'JST (UTC+09:00)',
-  ];
 
   return (
     <div className="sm:px-0">
@@ -94,27 +96,6 @@ const SystemConfigurationPage = () => {
             </div>
           </div>
 
-          {/* Server Timezone */}
-          <div className="space-y-2 w-full">
-            <Label htmlFor="timezone" className="text-gray-700 font-normal">
-              Server Timezone
-            </Label>
-            <Select
-              value={formData.timezone}
-              onValueChange={(value) => handleInputChange('timezone', value)}
-            >
-              <SelectTrigger className="bg-gray-50 border-gray-200 w-full h-11 focus:ring-0 focus:ring-offset-0">
-                <SelectValue placeholder="Select timezone" />
-              </SelectTrigger>
-              <SelectContent>
-                {timezones.map((tz) => (
-                  <SelectItem key={tz} value={tz}>
-                    {tz}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         {/* Security & Access Section */}
@@ -149,9 +130,10 @@ const SystemConfigurationPage = () => {
           </Button>
           <Button
             onClick={handleSave}
-            className="w-full sm:w-auto px-8 h-12 sm:h-11 bg-primary hover:bg-green-500 text-gray-700 rounded-lg font-medium shadow-sm order-1 sm:order-2"
+            disabled={isLoading}
+            className="w-full sm:w-auto px-8 h-12 sm:h-11 bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-700 rounded-lg font-medium shadow-sm order-1 sm:order-2"
           >
-            Save Changes
+            {isLoading ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </div>

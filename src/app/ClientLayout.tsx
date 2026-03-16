@@ -1,5 +1,6 @@
 'use client';
 
+import { SocketProvider } from '@/components/common/SocketProvider';
 import '@/i18n/config';
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
@@ -27,9 +28,11 @@ function I18nHandler({ children }: { children: ReactNode }) {
 export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <Provider store={store}>
-      <I18nHandler>
-        {children}
-      </I18nHandler>
+      <SocketProvider>
+        <I18nHandler>
+          {children}
+        </I18nHandler>
+      </SocketProvider>
     </Provider>
   );
 }

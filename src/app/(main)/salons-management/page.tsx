@@ -25,12 +25,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAllSalonQuery, useCreateSalonMutation } from "@/features/super_admin/salon/salonApi";
+import { useAllSalonQuery, useCreateSalonMutation, useSalonCardQuery } from "@/features/super_admin/salon/salonApi";
 import { cn } from "@/lib/utils";
 import { differenceInDays, format, isBefore } from "date-fns";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from 'next/link';
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from 'react-i18next';
 
@@ -54,20 +54,72 @@ const SalonsManagement = () => {
     admin: "" // For storing user ID of admin
   });
 
-  const { data: salonsRes, isLoading } = useAllSalonQuery({
-    searchTerm: searchTerm || undefined,
-    status: statusFilter !== "all" ? statusFilter : undefined,
-    startDate: startDate ? format(startDate, "yyyy-MM-dd") : undefined,
-    endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined,
-    page: currentPage,
-    limit: itemsPerPage
+  const { data: salonsRes, isLoading: isSalonsLoading } = useAllSalonQuery({
+    limit: 1000 // Fetching a large number to support front-end filtering
   });
+
+  const { data: cardRes } = useSalonCardQuery(undefined);
+  const cardData = cardRes?.data || {};
 
   const [createSalon] = useCreateSalonMutation();
 
-  const salons = salonsRes?.data || [];
-  const meta = salonsRes?.meta;
-  const totalPages = meta?.totalPage || 1;
+  interface ManagedSalon {
+    _id: string;
+    businessName: string;
+    salonId: string;
+    city: string;
+    activeStatus: string;
+    startDate: string;
+    expiryDate: string;
+  }
+
+  // Front-end filtering logic
+  const filteredSalons = useMemo(() => {
+    let filtered = (salonsRes?.data || []) as ManagedSalon[];
+
+    // Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter((s: ManagedSalon) =>
+        s.businessName?.toLowerCase().includes(searchLower) ||
+        s.salonId?.toLowerCase().includes(searchLower) ||
+        s.city?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((s: ManagedSalon) => s.activeStatus === statusFilter);
+    }
+
+    // Start Date filter
+    if (startDate) {
+      filtered = filtered.filter((s: ManagedSalon) => {
+        const sDate = new Date(s.startDate);
+        sDate.setHours(0, 0, 0, 0);
+        const filterDate = new Date(startDate);
+        filterDate.setHours(0, 0, 0, 0);
+        return sDate >= filterDate;
+      });
+    }
+
+    // End Date filter
+    if (endDate) {
+      filtered = filtered.filter((s: ManagedSalon) => {
+        const eDate = new Date(s.expiryDate);
+        eDate.setHours(23, 59, 59, 999);
+        const filterDate = new Date(endDate);
+        filterDate.setHours(23, 59, 59, 999);
+        return eDate <= filterDate;
+      });
+    }
+
+    return filtered;
+  }, [salonsRes?.data, searchTerm, statusFilter, startDate, endDate]);
+
+  const totalPages = Math.ceil(filteredSalons.length / itemsPerPage);
+  const paginatedSalons = filteredSalons.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalResults = filteredSalons.length;
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -78,9 +130,9 @@ const SalonsManagement = () => {
   const [newSalonExpiryDate, setNewSalonExpiryDate] = useState<Date>();
 
   const stats = [
-    { label: t('active_salons'), value: "24", bg: "bg-[#F5F5F3]" },
-    { label: t('total_customers'), value: "12,400", bg: "bg-[#F5F5F3]" },
-    { label: t('expiring_soon'), value: "04", bg: "bg-[#F5F5F3]", valueColor: "text-[#D97706]" },
+    { label: t('active_salons'), value: cardData.activeSalon || "0", bg: "bg-[#F5F5F3]" },
+    { label: t('total_customers'), value: (cardData.totalUser || 0).toLocaleString(), bg: "bg-[#F5F5F3]" },
+    { label: t('expiring_soon'), value: cardData.totalExpiringSoon || "0", bg: "bg-[#F5F5F3]", valueColor: "text-[#D97706]" },
   ];
 
   const handlePageChange = (page: number) => {
@@ -113,7 +165,7 @@ const SalonsManagement = () => {
     }
   };
 
-  if (isLoading) return <Loading />;
+  if (isSalonsLoading) return <Loading />;
 
   return (
     <div className="sm:px-6 lg:px-0 space-y-8 bg-white min-h-screen">
@@ -166,8 +218,9 @@ const SalonsManagement = () => {
             </SelectTrigger>
             <SelectContent className='w-full'>
               <SelectItem value="all">{t('all_status')}</SelectItem>
-              <SelectItem value="active">{t('active')}</SelectItem>
-              <SelectItem value="expired">{t('expired')}</SelectItem>
+              <SelectItem value="ACTIVE">{t('active')}</SelectItem>
+              <SelectItem value="EXPIRED">{t('expired')}</SelectItem>
+              <SelectItem value="PENDING">{t('pending')}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -244,8 +297,8 @@ const SalonsManagement = () => {
               </tr>
             </TableHeader>
             <TableBody>
-              {salons.length > 0 ? (
-                salons.map((salon: {
+              {paginatedSalons.length > 0 ? (
+                paginatedSalons.map((salon: {
                   _id: string;
                   businessName: string;
                   salonId: string;
@@ -313,9 +366,9 @@ const SalonsManagement = () => {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-10">
         <p className="text-sm text-gray-500 order-2 sm:order-1">
           {t('showing_results', {
-            start: salons.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0,
-            end: Math.min(currentPage * itemsPerPage, meta?.total || 0),
-            total: meta?.total || 0
+            start: paginatedSalons.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0,
+            end: Math.min(currentPage * itemsPerPage, totalResults),
+            total: totalResults
           })}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2 order-1 sm:order-2">

@@ -4,38 +4,27 @@ import { baseApi } from "../../utils/apiBaseQuery";
 export const notificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAllNotification: builder.query({
-      query: ({ page, limit }) => ({
-        url: `/notification/admin-all?page=${page}&limit=${limit}`,
+      query: () => ({
+        url: `/notification`,
         method: "GET",
       }),
+      providesTags: ["Notification"],
     }),
 
-    singleReadNotification: builder.mutation({
-      query: (id) => ({
-        url: `/notification/read/${id}`,
-        method: "PATCH",
-      }),
-    }),
-
-    allReadNotification: builder.mutation({
+    getNotificationCount: builder.query({
       query: () => ({
-        url: `/notification/all-read`,
-        method: "POST",
+        url: `/notification/count`,
+        method: "GET",
       }),
+      providesTags: ["NotificationCount"],
     }),
 
-    allDeleteNotification: builder.mutation({
-      query: () => ({
-        url: `/notification/admin`,
-        method: "DELETE",
-      }),
-    }),
-
-    singleDeleteNotification: builder.mutation({
+    readNotification: builder.query({
       query: (id) => ({
-        url: `/notification/admin/${id}`,
-        method: "DELETE",
+        url: `/notification/${id}`,
+        method: "GET",
       }),
+      invalidatesTags: ["NotificationCount", "Notification"],
     }),
 
   }),
@@ -44,8 +33,6 @@ export const notificationApi = baseApi.injectEndpoints({
 // Export hooks
 export const {
   useGetAllNotificationQuery,
-  useSingleReadNotificationMutation,
-  useAllReadNotificationMutation,
-  useAllDeleteNotificationMutation,
-  useSingleDeleteNotificationMutation
+  useGetNotificationCountQuery,
+  useReadNotificationQuery,
 } = notificationApi;
