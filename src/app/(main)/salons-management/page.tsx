@@ -247,6 +247,9 @@ const SalonsManagement = () => {
                     setStartDate(date);
                     setCurrentPage(1);
                   }}
+                  classNames={{
+                    selected: "bg-[#A8D5BA] text-gray-800 hover:bg-[#97C4A9] hover:text-gray-800 font-semibold",
+                  }}
                   initialFocus
                 />
               </PopoverContent>
@@ -272,6 +275,9 @@ const SalonsManagement = () => {
                   onSelect={(date) => {
                     setEndDate(date);
                     setCurrentPage(1);
+                  }}
+                  classNames={{
+                    selected: "bg-[#A8D5BA] text-gray-800 hover:bg-[#97C4A9] hover:text-gray-800 font-semibold",
                   }}
                   initialFocus
                 />
@@ -504,6 +510,9 @@ const SalonsManagement = () => {
                           mode="single"
                           selected={newSalonStartDate}
                           onSelect={setNewSalonStartDate}
+                          classNames={{
+                            selected: "bg-[#A8D5BA] text-gray-800 hover:bg-[#97C4A9] hover:text-gray-800 font-semibold",
+                          }}
                           initialFocus
                         />
                       </PopoverContent>
@@ -528,6 +537,9 @@ const SalonsManagement = () => {
                           mode="single"
                           selected={newSalonExpiryDate}
                           onSelect={setNewSalonExpiryDate}
+                          classNames={{
+                            selected: "bg-[#A8D5BA] text-gray-800 hover:bg-[#97C4A9] hover:text-gray-800 font-semibold",
+                          }}
                           initialFocus
                         />
                       </PopoverContent>

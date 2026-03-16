@@ -25,8 +25,13 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
   const dispatch = useDispatch();
 
+  // Get token to skip query if not logged in
+  const token = typeof window !== 'undefined' ? localStorage.getItem('PharmacyAdmin') : null;
+
   // Get user profile to have the ID for listening to events
-  const { data: profileRes } = useGetMyProfileQuery(undefined);
+  const { data: profileRes } = useGetMyProfileQuery(undefined, {
+    skip: !token
+  });
   const user = profileRes?.data;
   const userId = user?._id;
 

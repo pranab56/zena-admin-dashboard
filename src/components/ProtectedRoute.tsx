@@ -3,19 +3,25 @@
 import { useGetMyProfileQuery } from "@/features/profile/profileApi";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import Loading from "./common/Loading";
 
 export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isHydrated, setIsHydrated] = useState(false);
+  interface RootState {
+    auth: {
+      token: string | null;
+    };
+  }
+  const token = useSelector((state: RootState) => state.auth.token);
 
   useEffect(() => {
     setIsHydrated(true);
   }, []);
 
   const isAuthPath = pathname?.startsWith("/auth");
-  const token = typeof window !== "undefined" ? localStorage.getItem("PharmacyAdmin") : null;
 
   const { data: profileRes, isLoading, isError, isSuccess } = useGetMyProfileQuery(undefined, {
     // We only skip if no token or not hydrated. 
@@ -26,11 +32,9 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isHydrated) return;
 
-    const currentToken = localStorage.getItem("PharmacyAdmin");
-
     if (!isAuthPath) {
       // PROTECTED PATHS
-      if (!currentToken) {
+      if (!token) {
         router.replace("/auth/login");
         return;
       }
@@ -63,7 +67,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
     } else {
       // AUTH PATHS (Login, etc.)
       // ONLY redirect away if we HAVE a token AND the API specifically confirms it is valid (isSuccess)
-      if (currentToken && isSuccess && pathname !== "/auth/logout") {
+      if (token && isSuccess && pathname !== "/auth/logout") {
         const role = profileRes?.data?.role;
         if (role === 'SUPER_ADMIN' || role === 'superadmin') {
           router.replace("/overview");
@@ -72,7 +76,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
         }
       }
     }
-  }, [isAuthPath, isError, isSuccess, isHydrated, pathname, profileRes, router]);
+  }, [isAuthPath, isError, isSuccess, isHydrated, pathname, profileRes, router, token]);
 
   if (!isHydrated) return null;
 

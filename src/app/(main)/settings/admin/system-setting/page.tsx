@@ -3,19 +3,32 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useSystemSettingMutation } from '@/features/super_admin/settings/settingsApi';
-import { useState } from 'react';
+import { useGetSystemSettingQuery, useSystemSettingMutation } from '@/features/super_admin/settings/settingsApi';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 const SystemConfigurationPage = () => {
   const [formData, setFormData] = useState({
-    platformName: 'Zana',
-    supportEmail: 'support@loyaltypro.com',
+    platformName: '',
+    supportEmail: '',
     timezone: 'GMT/UTC (UTC+04:00)',
-    minPasswordLength: '8',
+    minPasswordLength: '',
   });
 
+  const { data: settingsData, isLoading: isFetching } = useGetSystemSettingQuery(undefined);
   const [updateSettings, { isLoading }] = useSystemSettingMutation();
+
+  useEffect(() => {
+    if (settingsData?.success && settingsData.data) {
+      const { platformName, supportEmail, passwordLength } = settingsData.data;
+      setFormData({
+        platformName: platformName || '',
+        supportEmail: supportEmail || '',
+        timezone: 'GMT/UTC (UTC+04:00)',
+        minPasswordLength: passwordLength?.toString() || '',
+      });
+    }
+  }, [settingsData]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -30,7 +43,7 @@ const SystemConfigurationPage = () => {
         platformName: formData.platformName,
         supportEmail: formData.supportEmail,
         passwordLength: Number(formData.minPasswordLength),
-        ruleType: "globalRules"
+        ruleType: "globalRule",
       };
 
       const res = await updateSettings(payload).unwrap();
@@ -51,6 +64,11 @@ const SystemConfigurationPage = () => {
   return (
     <div className="sm:px-0">
       <div className="">
+        {isFetching && (
+          <div className="flex justify-center items-center py-10">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
+        )}
         {/* Header Section */}
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-3">

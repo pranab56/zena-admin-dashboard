@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSalonDetailsQuery } from "@/features/super_admin/salon/salonApi";
 import { format } from "date-fns";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Star } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
@@ -38,8 +38,8 @@ export default function SalonProfile() {
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-3xl font-semibold text-[#333]">{salon.businessName}</h1>
           <Badge className={`border-none px-3 py-0.5 font-medium rounded-full shadow-none text-xs ${salon.activeStatus === 'ACTIVE' || salon.activeStatus === "'ACTIVE''"
-              ? 'bg-[#D1EBD9] text-[#2F6B43] hover:bg-[#D1EBD9]'
-              : 'bg-[#F9D8D8] text-[#D84C4C] hover:bg-[#F9D8D8]'
+            ? 'bg-[#D1EBD9] text-[#2F6B43] hover:bg-[#D1EBD9]'
+            : 'bg-[#F9D8D8] text-[#D84C4C] hover:bg-[#F9D8D8]'
             }`}>
             {t(salon.activeStatus?.toLowerCase().replace(/'/g, '') || 'inactive')}
           </Badge>
@@ -52,6 +52,17 @@ export default function SalonProfile() {
         </div>
 
         <p className="text-gray-400 text-[15px]">{t('created_since', { date: format(new Date(salon.createdAt), "MMM dd, yyyy") })}</p>
+      </div>
+
+      {/* Rating Section */}
+      <div className="flex flex-col items-start gap-1">
+        <div className="flex items-center gap-2 bg-[#FFF8F6] px-3 py-1.5 rounded-2xl">
+          <Star className="w-5 h-5 text-[#FFBD59] fill-[#FFBD59]" />
+          <span className="text-xl font-bold text-gray-700">
+            {salon.averageRating ? Number(salon.averageRating).toFixed(1) : '0.0'}
+          </span>
+        </div>
+        <p className="text-gray-400 text-sm ml-1">{t('good_experience', { defaultValue: 'Good experience' })}</p>
       </div>
 
       {/* Business Address Section */}

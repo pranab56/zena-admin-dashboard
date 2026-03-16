@@ -82,7 +82,6 @@ export default function AdminLoginPage() {
         if (response.success) {
           toast.success(response.message || t('login_success', { defaultValue: 'Login successful' }));
           dispatch(setToken(response.data.accessToken));
-          localStorage.setItem('role', response.data.user.role);
 
           if (response.data.user.role === 'SUPER_ADMIN') {
             router.push('/overview');
