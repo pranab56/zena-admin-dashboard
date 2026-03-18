@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { useGetSystemSettingQuery, useSystemSettingMutation } from '@/features/super_admin/settings/settingsApi';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const SystemConfigurationPage = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     platformName: '',
     supportEmail: '',
@@ -48,11 +50,11 @@ const SystemConfigurationPage = () => {
 
       const res = await updateSettings(payload).unwrap();
       if (res.success) {
-        toast.success(res.message || 'Settings updated successfully');
+        toast.success(res.message || t('profile_update_success'));
       }
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || 'Failed to update settings');
+      toast.error(error?.data?.message || t('profile_update_failed'));
     }
   };
 
@@ -70,26 +72,26 @@ const SystemConfigurationPage = () => {
           </div>
         )}
         {/* Header Section */}
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-3">
-            System Configuration
+        <div className="mb-8 text-start">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-3 text-start">
+            {t('system_configuration')}
           </h1>
-          <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-            Manage global platform parameters, security protocols, and white-label Platform Branding branding for all business tenants.
+          <p className="text-gray-600 leading-relaxed text-sm sm:text-base text-start">
+            {t('system_config_desc')}
           </p>
         </div>
 
         {/* General Settings Section */}
-        <div className="bg-white rounded-lg shadow-sm p-5 sm:p-8 mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6">
-            General Settings
+        <div className="bg-white rounded-lg shadow-sm p-5 sm:p-8 mb-6 text-start">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6 text-start">
+            {t('general_settings')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Platform Name */}
-            <div className="space-y-2">
+            <div className="space-y-2 text-start">
               <Label htmlFor="platformName" className="text-gray-700 font-normal">
-                Platform Name
+                {t('platform_name', { defaultValue: 'Platform Name' })}
               </Label>
               <Input
                 id="platformName"
@@ -100,9 +102,9 @@ const SystemConfigurationPage = () => {
             </div>
 
             {/* Support Email Address */}
-            <div className="space-y-2">
+            <div className="space-y-2 text-start">
               <Label htmlFor="supportEmail" className="text-gray-700 font-normal">
-                Support Email Address
+                {t('support_email_address')}
               </Label>
               <Input
                 id="supportEmail"
@@ -117,15 +119,15 @@ const SystemConfigurationPage = () => {
         </div>
 
         {/* Security & Access Section */}
-        <div className="bg-white rounded-lg shadow-sm p-5 sm:p-8 mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6">
-            Security & Access
+        <div className="bg-white rounded-lg shadow-sm p-5 sm:p-8 mb-6 text-start">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-6 text-start">
+            {t('security_access')}
           </h2>
 
           {/* Minimum Password Length */}
-          <div className="space-y-2 max-w-md">
+          <div className="space-y-2 max-w-md text-start">
             <Label htmlFor="minPasswordLength" className="text-gray-700 font-normal">
-              Minimum Password Length
+              {t('min_password_length')}
             </Label>
             <Input
               id="minPasswordLength"
@@ -144,14 +146,14 @@ const SystemConfigurationPage = () => {
             variant="outline"
             className="w-full sm:w-auto px-8 h-12 sm:h-11 border-2 border-pink-300 text-pink-500 hover:bg-pink-50 hover:text-pink-600 rounded-lg font-medium order-2 sm:order-1"
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button
             onClick={handleSave}
             disabled={isLoading}
             className="w-full sm:w-auto px-8 h-12 sm:h-11 bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-700 rounded-lg font-medium shadow-sm order-1 sm:order-2"
           >
-            {isLoading ? 'Saving...' : 'Save Changes'}
+            {isLoading ? t('saving_dots') : t('save_changes')}
           </Button>
         </div>
       </div>

@@ -30,7 +30,7 @@ import {
 } from "recharts";
 
 const Dashboard = () => {
-  const { } = useTranslation();
+  const { t } = useTranslation();
 
   // Fetch API Data
   const { data: overviewData, isLoading: isOverviewLoading } = useOverviewQuery(undefined);
@@ -41,11 +41,11 @@ const Dashboard = () => {
 
   // Metrics Mapping
   const metrics = [
-    { title: "TOTAL SALONS", value: stats.totalSalon || 0, bg: "bg-[#E3ECE4]" },
-    { title: "TODAY VISITS", value: stats.visitToday || 0, bg: "bg-[#E9E3C1]" },
-    { title: "AVG. VISIT FREQUENCY", value: stats.avgVisit || 0, bg: "bg-[#F3A5A0]" },
-    { title: "TOTAL USERS", value: stats.totalUser || 0, bg: "bg-[#EFD1C9]" },
-    { title: "POINTS ISSUED", value: stats.pointIssued || 0, bg: "bg-[#E0E0E0]" },
+    { title: t('total_salons'), value: stats.totalSalon || 0, bg: "bg-[#E3ECE4]" },
+    { title: t('visits_today'), value: stats.visitToday || 0, bg: "bg-[#E9E3C1]" },
+    { title: t('avg_visit_frequency'), value: stats.avgVisit || 0, bg: "bg-[#F3A5A0]" },
+    { title: t('total_users'), value: stats.totalUser || 0, bg: "bg-[#EFD1C9]" },
+    { title: t('points_issued'), value: stats.pointIssued || 0, bg: "bg-[#E0E0E0]" },
   ];
 
   interface MonthlyTrend {
@@ -76,7 +76,12 @@ const Dashboard = () => {
   }
 
   // Map monthly data for chart (result field)
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthNames = [
+    t('month_jan'), t('month_feb'), t('month_mar'), t('month_apr'),
+    t('month_may'), t('month_jun'), t('month_jul'), t('month_aug'),
+    t('month_sep'), t('month_oct'), t('month_nov'), t('month_dec')
+  ];
+
   const visitsTrend = (stats.result || []).map((item: MonthlyTrend) => ({
     month: monthNames[item.month - 1] || "",
     visits: item.totalUsers || 0
@@ -86,13 +91,13 @@ const Dashboard = () => {
   const servicesData = (topServiceData?.data || []).map((item: TopService) => ({
     name: item.serviceName,
     value: item.percentage,
-    visits: `${item.totalVisits} visits`
+    visits: t('visits_count', { count: item.totalVisits })
   }));
 
   // Top Performing Salons
   const salonsData = (topSalonsData?.data || []).map((item: TopSalon) => ({
     name: item.businessName,
-    points: `${item.totalPoints} Points`,
+    points: `${item.totalPoints} ${t('points_header').toLowerCase()}`,
     value: item.percentage
   }));
 
@@ -140,13 +145,13 @@ const Dashboard = () => {
           {/* Visits Trend */}
           <Card className="rounded-2xl border-none shadow-sm overflow-hidden p-6 bg-white">
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800">User Growth Trend</h3>
-              <p className="text-sm text-gray-500">Monthly breakdown of new users</p>
+              <h3 className="text-lg font-semibold text-gray-800">{t('user_growth_trend')}</h3>
+              <p className="text-sm text-gray-500">{t('monthly_breakdown_users')}</p>
             </div>
 
             <Card className="bg-[#F8F8F8] border-none rounded-2xl h-[400px] shadow-none p-4">
               <div className="mb-4">
-                <h4 className="font-[serif] text-xl italic text-[#333]">Growth Chart</h4>
+                <h4 className="font-[serif] text-xl italic text-[#333]">{t('growth_chart')}</h4>
               </div>
               <div className="h-[280px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -171,7 +176,7 @@ const Dashboard = () => {
                         if (active && payload && payload.length) {
                           return (
                             <div className="bg-black/90 text-white px-4 py-2 rounded shadow-xl text-sm border-none">
-                              <p className="font-bold">Total Users</p>
+                              <p className="font-bold">{t('total_users').toLowerCase()}</p>
                               <p>{payload[0].value?.toLocaleString()}</p>
                             </div>
                           );
@@ -197,19 +202,19 @@ const Dashboard = () => {
           {/* Active Customers / Subscription Table */}
           <Card className="rounded-2xl border-none shadow-sm overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between pb-2 bg-white px-6 pt-6">
-              <CardTitle className="text-lg font-semibold text-gray-800">Most Active Customers</CardTitle>
-              {/* <Button variant="link" className="text-[#E08E8E] font-medium p-0 hover:underline ">View All</Button> */}
+              <CardTitle className="text-lg font-semibold text-gray-800">{t('most_active_customers')}</CardTitle>
+              {/* <Button variant="link" className="text-[#E08E8E] font-medium p-0 hover:underline ">{t('view_all')}</Button> */}
             </CardHeader>
             <CardContent className="p-0">
               <div className="px-4 sm:px-6 pb-6 pt-2 overflow-auto max-h-[465px] custom-scrollbar transition-all">
                 <Table className="min-w-[700px] md:min-w-full">
                   <TableHeader className="sticky top-0 z-10 bg-white">
-                    <TableRow className="bg-[#E5E9E4] hover:bg-[#E5E9E4] border-none shadow-sm">
-                      <TableHead className="text-gray-700 font-bold first:rounded-l-lg h-12">CUSTOMER NAME</TableHead>
-                      <TableHead className="text-gray-700 font-bold h-12">PHONE NUMBER</TableHead>
-                      <TableHead className="text-gray-700 font-bold h-12">TOTAL VISITS</TableHead>
-                      <TableHead className="text-gray-700 font-bold h-12">TOTAL POINTS</TableHead>
-                      <TableHead className="text-gray-700 font-bold last:rounded-r-lg h-12">STATUS</TableHead>
+                    <TableRow className="bg-[#E5E9E4] hover:bg-[#E5E9E4] border-none shadow-sm text-start">
+                      <TableHead className="text-gray-700 font-bold first:rounded-l-lg h-12 text-start">{t('name').toUpperCase()}</TableHead>
+                      <TableHead className="text-gray-700 font-bold h-12 text-start">{t('phone_number_header')}</TableHead>
+                      <TableHead className="text-gray-700 font-bold h-12 text-start">{t('total_visits').toUpperCase()}</TableHead>
+                      <TableHead className="text-gray-700 font-bold h-12 text-start">{t('total_points').toUpperCase()}</TableHead>
+                      <TableHead className="text-gray-700 font-bold last:rounded-r-lg h-12 text-start">{t('status').toUpperCase()}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -229,13 +234,13 @@ const Dashboard = () => {
                               customer.status === 'PENDING' ? 'bg-[#FFF4E5] text-[#B76E00] hover:bg-[#FFF4E5]' : 'bg-[#D1EBD9] text-[#2F6B43] hover:bg-[#D1EBD9]'
                             )}
                           >
-                            {customer.status?.toLowerCase()}
+                            {t(customer.status?.toLowerCase() || '')}
                           </Badge>
                         </TableCell>
                       </TableRow>
                     )) : (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-10 text-gray-400">No active customers found</TableCell>
+                        <TableCell colSpan={5} className="text-center py-10 text-gray-400">{t('no_active_customers')}</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
@@ -249,10 +254,10 @@ const Dashboard = () => {
         <div className="lg:col-span-5 space-y-8">
           {/* Top Performing Service */}
           <Card className="rounded-2xl border-none shadow-sm p-6 bg-white">
-            <div className="mb-8 flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">Top Performing Service</h3>
-                <p className="text-sm text-gray-500">Based on customer engagement</p>
+            <div className="mb-8 flex justify-between items-center text-start">
+              <div className="text-start">
+                <h3 className="text-lg font-semibold text-gray-800">{t('top_performing_service')}</h3>
+                <p className="text-sm text-gray-500">{t('based_on_engagement')}</p>
               </div>
               {isTopServiceLoading && <Loader2 className="h-5 w-5 animate-spin text-[#A8D5BA]" />}
             </div>
@@ -275,16 +280,16 @@ const Dashboard = () => {
                     </span>
                   </div>
                 </div>
-              )) : <p className="text-center text-gray-400 py-4">No service data available</p>}
+              )) : <p className="text-center text-gray-400 py-4">{t('no_service_data')}</p>}
             </div>
           </Card>
 
           {/* Top Performing Salons */}
           <Card className="rounded-2xl border-none shadow-sm p-6 bg-white">
-            <div className="mb-8 flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">Top Performing Salons</h3>
-                <p className="text-sm text-gray-500">Based on visit activity</p>
+            <div className="mb-8 flex justify-between items-center text-start">
+              <div className="text-start">
+                <h3 className="text-lg font-semibold text-gray-800">{t('top_performing_salons')}</h3>
+                <p className="text-sm text-gray-500">{t('based_on_visit_activity')}</p>
               </div>
               {isTopSalonsLoading && <Loader2 className="h-5 w-5 animate-spin text-[#A8D5BA]" />}
             </div>
@@ -302,7 +307,7 @@ const Dashboard = () => {
                     />
                   </div>
                 </div>
-              )) : <p className="text-center text-gray-400 py-4">No salon data available</p>}
+              )) : <p className="text-center text-gray-400 py-4">{t('no_salon_data')}</p>}
             </div>
           </Card>
         </div>

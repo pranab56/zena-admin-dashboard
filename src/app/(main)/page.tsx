@@ -111,7 +111,7 @@ const LoyaltyDashboard = () => {
         time: formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }),
         icon: n.notificationEvent === 'PURCHASE_REWARD' ? 'Gift' : 'Bell'
       }));
-  }, [notificationsRes, t]);
+  }, [notificationsRes]);
 
   if (isDashboardLoading || isRedemptionLoading || isNotificationsLoading) {
     return <div className="p-8 text-center text-gray-500">{t('loading_dashboard')}</div>;
