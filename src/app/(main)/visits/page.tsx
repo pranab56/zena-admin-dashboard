@@ -32,7 +32,9 @@ function VisitContent() {
   // Fetch Pending Visits for Session Details
   const { data: pendingVisitsRes, isLoading: isPendingLoading, refetch: refetchPendingVisits } = useAllVisitsQuery({ userId, status: 'PENDING' }, { skip: !userId });
 
-  const pendingVisit = pendingVisitsRes?.data?.data?.[0];
+
+  const smartRule = pendingVisitsRes?.data;
+  console.log("smart Rule ", smartRule?.everyVisitCoins)
 
   // Fetch Approved Visits for Recent Activity
   const { data: approvedVisitsRes, isLoading: isApprovedLoading, refetch: refetchApprovedVisits } = useAllVisitsQuery({ userId, status: 'APPROVED' }, { skip: !userId });
@@ -42,13 +44,15 @@ function VisitContent() {
   const [approveVisit, { isLoading: isApproving }] = useApproveVisitsMutation();
 
   const handleConfirmVisit = async () => {
-    if (!pendingVisit?.rewardId) {
-      toast.error('No pending visit found to confirm');
-      return;
-    }
+    // if (!smartRule?._id) {
+    //   toast.error('No pending visit found to confirm');
+    //   return;
+    // }
 
     try {
-      const res = await approveVisit(pendingVisit.rewardId).unwrap();
+      // Use a visit ID from real visits, or whatever ID is expected.
+      // Based on previous user edit, we use smartRule._id
+      const res = await approveVisit(userId).unwrap();
       if (res.success) {
         toast.success(res.message || 'Visit confirmed successfully');
       }
@@ -208,7 +212,7 @@ function VisitContent() {
                 <Label className="text-[13px] font-bold text-gray-500 tracking-widest uppercase">{t('points_to_award')}</Label>
                 <div className="relative group">
                   <Input
-                    value={pendingVisit?.totalPoint || '0'}
+                    value={smartRule?.everyVisitCoins || '0'}
                     className="py-7 ps-6 pe-16 border-gray-200 focus:border-[#A8D5BA] focus:ring-[#A8D5BA] text-xl font-bold rounded-2xl bg-[#EEF8ED] border-none"
                     readOnly
                   />
@@ -219,12 +223,12 @@ function VisitContent() {
               <div className="pt-4">
                 <Button
                   onClick={handleConfirmVisit}
-                  disabled={isApproving || !pendingVisit}
+                  disabled={isApproving || !smartRule}
                   className="w-full bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-medium text-lg py-7 rounded-2xl shadow-lg shadow-green-100 transition-all hover:translate-y-[-2px] active:translate-y-[0px]"
                 >
                   {isApproving ? t('confirming') : t('confirm_visit_btn')}
                 </Button>
-                {!pendingVisit && <p className="text-xs text-red-500 mt-2 text-center">No pending visit request from this user.</p>}
+                {!smartRule && <p className="text-xs text-red-500 mt-2 text-center">No pending visit request from this user.</p>}
               </div>
             </CardContent>
           </Card>

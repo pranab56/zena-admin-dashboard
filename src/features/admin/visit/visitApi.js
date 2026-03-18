@@ -3,17 +3,20 @@ import { baseApi } from "../../../utils/apiBaseQuery";
 
 export const visitApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+
+
     allVisits: builder.query({
       query: (params) => ({
-        url: "/visit",
+        url: "/rule/smartRule",
         method: "GET",
         params: params,
       }),
     }),
 
+
     approveVisits: builder.mutation({
-      query: (rewardId) => ({
-        url: `/visit/${rewardId}`,
+      query: (id) => ({
+        url: `/salon-reward/approve/${id}`,
         method: "PATCH",
       }),
     }),
