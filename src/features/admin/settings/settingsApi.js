@@ -68,6 +68,16 @@ export const settingsApi = baseApi.injectEndpoints({
       invalidatesTags: ["Settings"]
     }),
 
+    updateSmartRuleBody: builder.mutation({
+      query: ({ data }) => ({
+        url: `/rule/smart`,
+        method: "PUT",
+        body: data
+      }),
+      invalidatesTags: ["Settings"]
+    }),
+
+
     // time & day rules
     allRule: builder.query({
       query: () => ({
@@ -115,5 +125,6 @@ export const {
   useAllRuleQuery,
   useCreateRuleMutation,
   useUpdateRuleMutation,
-  useDeleteRuleMutation
+  useDeleteRuleMutation,
+  useUpdateSmartRuleBodyMutation
 } = settingsApi;

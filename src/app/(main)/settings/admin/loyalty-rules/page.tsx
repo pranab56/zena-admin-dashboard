@@ -30,7 +30,8 @@ import {
   useUpdateRuleMutation,
   useUpdateSmartRuleMutation,
   useUpdateTireMutation,
-  useUpdateTireStatusMutation
+  useUpdateTireStatusMutation,
+  useUpdateSmartRuleBodyMutation
 } from '@/features/admin/settings/settingsApi';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -43,17 +44,21 @@ const LoyaltyRulesPage = () => {
   const [isTireModalOpen, setIsTireModalOpen] = useState(false);
   const [editingTire, setEditingTire] = useState<{ _id: string; tireName: string; tireCoins: number; isActive: boolean } | null>(null);
 
+  const [isSmartEditModalOpen, setIsSmartEditModalOpen] = useState(false);
+  const [editingSmartRule, setEditingSmartRule] = useState<{ key: string; label: string; value: number } | null>(null);
+
   // APIs
   const { data: smartRuleRes } = useAllSmartRuleQuery(undefined);
   const [updateSmartRule] = useUpdateSmartRuleMutation();
+  const [updateSmartRuleBody, { isLoading: isUpdatingSmartBody }] = useUpdateSmartRuleBodyMutation();
 
   const { data: tiresRes } = useAllTireQuery(undefined);
-  const [createTire] = useCreateTireMutation();
-  const [updateTire] = useUpdateTireMutation();
+  const [createTire, { isLoading: isCreatingTire }] = useCreateTireMutation();
+  const [updateTire, { isLoading: isUpdatingTire }] = useUpdateTireMutation();
   const [updateTireStatus] = useUpdateTireStatusMutation();
 
   const { data: rulesRes } = useAllRuleQuery(undefined);
-  const [createRule] = useCreateRuleMutation();
+  const [createRule, { isLoading: isCreatingRule }] = useCreateRuleMutation();
   const [updateRule] = useUpdateRuleMutation();
   const [deleteRule] = useDeleteRuleMutation();
 
@@ -66,6 +71,28 @@ const LoyaltyRulesPage = () => {
     try {
       await updateSmartRule({ id: smartRule._id, data: { [key]: value } }).unwrap();
       toast.success('Smart Rule updated');
+    } catch {
+      toast.error('Failed to update Smart Rule');
+    }
+  };
+
+  const handleSmartRuleBodyUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingSmartRule) return;
+
+    const formData = new FormData(e.currentTarget);
+    const newValue = parseInt(formData.get('value') as string);
+
+    try {
+      await updateSmartRuleBody({
+        data: {
+          ruleType: 'smartRule',
+          [editingSmartRule.key]: newValue,
+        },
+      }).unwrap();
+      toast.success('Smart Rule updated successfully');
+      setIsSmartEditModalOpen(false);
+      setEditingSmartRule(null);
     } catch {
       toast.error('Failed to update Smart Rule');
     }
@@ -123,6 +150,17 @@ const LoyaltyRulesPage = () => {
               <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
                 <span className="text-gray-800 font-bold">+{smartRule?.everyVisitCoins || 0} {t('pts')}</span>
                 <div className="flex items-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditingSmartRule({ key: 'everyVisitCoins', label: t('every_visit'), value: smartRule?.everyVisitCoins || 0 });
+                      setIsSmartEditModalOpen(true);
+                    }}
+                    className="h-9 px-4 rounded-lg text-gray-500 border-gray-200 hover:bg-gray-50 hover:text-gray-800 transition-all active:scale-95"
+                  >
+                    {t('edit')}
+                  </Button>
                   <Switch
                     checked={smartRule?.everyVisitIsActive || false}
                     onCheckedChange={(c) => handleSmartRuleToggle('everyVisitIsActive', c)}
@@ -136,13 +174,50 @@ const LoyaltyRulesPage = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-5 border border-gray-100 rounded-2xl hover:border-gray-200 transition-colors gap-4">
               <div className="flex flex-wrap items-center gap-1 text-gray-700">
                 <span className="font-medium">{t('if_time_between')}</span>
-                <span className="font-semibold text-gray-600 ml-2">{smartRule?.timeZoneStart || 0}:00</span>
+                <span className="font-semibold text-gray-600 ml-2">
+                  {smartRule?.timeZoneStart || 0}:00
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setEditingSmartRule({ key: 'timeZoneStart', label: 'Start Time', value: smartRule?.timeZoneStart || 0 });
+                      setIsSmartEditModalOpen(true);
+                    }}
+                    className="h-6 px-1 ml-1 text-xs text-pink-400 hover:text-pink-600"
+                  >
+                    {t('edit')}
+                  </Button>
+                </span>
                 <span className="text-gray-700 font-medium px-2">{t('and')}</span>
-                <span className="font-semibold text-gray-600">{smartRule?.timeZoneEnd || 0}:00</span>
+                <span className="font-semibold text-gray-600">
+                  {smartRule?.timeZoneEnd || 0}:00
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setEditingSmartRule({ key: 'timeZoneEnd', label: 'End Time', value: smartRule?.timeZoneEnd || 0 });
+                      setIsSmartEditModalOpen(true);
+                    }}
+                    className="h-6 px-1 ml-1 text-xs text-pink-400 hover:text-pink-600"
+                  >
+                    {t('edit')}
+                  </Button>
+                </span>
               </div>
               <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
                 <span className="text-gray-800 font-bold">{t('visit_earns')} + {smartRule?.timeZoneGetCoin || 0} {t('pts')}</span>
                 <div className="flex items-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditingSmartRule({ key: 'timeZoneGetCoin', label: t('if_time_between'), value: smartRule?.timeZoneGetCoin || 0 });
+                      setIsSmartEditModalOpen(true);
+                    }}
+                    className="h-9 px-4 rounded-lg text-gray-500 border-gray-200 hover:bg-gray-50 hover:text-gray-800 transition-all active:scale-95"
+                  >
+                    {t('edit')}
+                  </Button>
                   <Switch
                     checked={smartRule?.timeZoneIsActive || false}
                     onCheckedChange={(c) => handleSmartRuleToggle('timeZoneIsActive', c)}
@@ -157,11 +232,33 @@ const LoyaltyRulesPage = () => {
               <div className="flex flex-wrap items-center gap-1 text-gray-700">
                 <span className="font-medium">
                   If total {smartRule?.totalVist || 0} visits
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setEditingSmartRule({ key: 'totalVist', label: 'Total Visits Count', value: smartRule?.totalVist || 0 });
+                      setIsSmartEditModalOpen(true);
+                    }}
+                    className="h-6 px-1 ml-1 text-xs text-pink-400 hover:text-pink-600"
+                  >
+                    {t('edit')}
+                  </Button>
                 </span>
               </div>
               <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
                 <span className="text-gray-800 font-bold">{t('example')} +{smartRule?.totalVisitGetCoin || 0} {t('pts')}</span>
                 <div className="flex items-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditingSmartRule({ key: 'totalVisitGetCoin', label: t('total_visits'), value: smartRule?.totalVisitGetCoin || 0 });
+                      setIsSmartEditModalOpen(true);
+                    }}
+                    className="h-9 px-4 rounded-lg text-gray-500 border-gray-200 hover:bg-gray-50 hover:text-gray-800 transition-all active:scale-95"
+                  >
+                    {t('edit')}
+                  </Button>
                   <Switch
                     checked={smartRule?.totalVisitIsActive || false}
                     onCheckedChange={(c) => handleSmartRuleToggle('totalVisitIsActive', c)}
@@ -179,6 +276,17 @@ const LoyaltyRulesPage = () => {
               <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
                 <span className="text-gray-800 font-bold">{t('example')} + {smartRule?.inviteEarCoin || 0} {t('pts')}</span>
                 <div className="flex items-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditingSmartRule({ key: 'inviteEarCoin', label: t('if_invite_friend'), value: smartRule?.inviteEarCoin || 0 });
+                      setIsSmartEditModalOpen(true);
+                    }}
+                    className="h-9 px-4 rounded-lg text-gray-500 border-gray-200 hover:bg-gray-50 hover:text-gray-800 transition-all active:scale-95"
+                  >
+                    {t('edit')}
+                  </Button>
                   <Switch
                     checked={smartRule?.inviteEarIsActive || false}
                     onCheckedChange={(c) => handleSmartRuleToggle('inviteEarIsActive', c)}
@@ -428,9 +536,10 @@ const LoyaltyRulesPage = () => {
                   </Button>
                   <Button
                     type="submit"
+                    disabled={isCreatingRule}
                     className="h-11 sm:h-12 w-full sm:w-auto px-10 rounded-xl bg-[#A8D1B1] hover:bg-[#96C09F] text-[#4A6752] font-medium text-sm sm:text-base"
                   >
-                    {t('save_rule')}
+                    {isCreatingRule ? 'Saving...' : t('save_rule')}
                   </Button>
                 </div>
               </div>
@@ -508,9 +617,58 @@ const LoyaltyRulesPage = () => {
                   </Button>
                   <Button
                     type="submit"
+                    disabled={isCreatingTire || isUpdatingTire}
                     className="h-11 sm:h-12 w-full sm:w-auto px-10 rounded-xl bg-[#A8D1B1] hover:bg-[#96C09F] text-[#4A6752] font-medium text-sm sm:text-base"
                   >
-                    {t('save')}
+                    {isCreatingTire || isUpdatingTire ? 'Saving...' : t('save')}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+      {/* Edit Smart Rule Modal */}
+      <Dialog open={isSmartEditModalOpen} onOpenChange={setIsSmartEditModalOpen}>
+        <DialogContent className="w-[95%] sm:max-w-[400px] p-0 overflow-hidden rounded-3xl sm:rounded-[2rem] border-none">
+          <form onSubmit={handleSmartRuleBodyUpdate}>
+            <div className="p-6 sm:p-8">
+              <DialogHeader className="relative mb-6 sm:mb-8">
+                <DialogTitle className="text-xl sm:text-2xl font-semibold text-gray-800">
+                  {t('edit')} {editingSmartRule?.label}
+                </DialogTitle>
+                <DialogClose className="absolute -top-2 -right-2 sm:right-[-10px] sm:top-[-10px] bg-white rounded-full p-2 text-pink-400 hover:bg-pink-50 border border-pink-100 transition-all shadow-sm">
+                </DialogClose>
+              </DialogHeader>
+
+              <div className="space-y-5 sm:space-y-6">
+                <div className="space-y-2">
+                  <Label className="text-gray-700 font-medium text-sm sm:base">Value <span className="text-pink-400">*</span></Label>
+                  <Input
+                    name="value"
+                    type="number"
+                    required
+                    defaultValue={editingSmartRule?.value}
+                    placeholder="Enter value"
+                    className="h-11 sm:h-12 rounded-xl border-gray-200 focus:ring-1 focus:ring-[#A8D1B1] focus:border-[#A8D1B1] placeholder:text-gray-300 text-sm sm:text-base"
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-2 sm:pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsSmartEditModalOpen(false)}
+                    className="h-11 sm:h-12 w-full sm:w-auto px-10 rounded-xl border-[#FF8FAB] text-[#FF8FAB] hover:bg-pink-50 font-medium text-sm sm:text-base"
+                  >
+                    {t('cancel')}
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isUpdatingSmartBody}
+                    className="h-11 sm:h-12 w-full sm:w-auto px-10 rounded-xl bg-[#A8D1B1] hover:bg-[#96C09F] text-[#4A6752] font-medium text-sm sm:text-base"
+                  >
+                    {isUpdatingSmartBody ? 'Saving...' : t('save')}
                   </Button>
                 </div>
               </div>
