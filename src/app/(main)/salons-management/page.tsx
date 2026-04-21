@@ -29,10 +29,13 @@ import { useAllSalonQuery, useCreateSalonMutation, useSalonCardQuery } from "@/f
 import { cn } from "@/lib/utils";
 import { differenceInDays, format, isBefore } from "date-fns";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import Link from 'next/link';
-import { useMemo, useState } from "react";
+import { GoogleMap, Marker, Autocomplete, useJsApiLoader } from "@react-google-maps/api";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from 'react-i18next';
+import Link from "next/link";
+
+const libraries: ("places" | "drawing" | "geometry" | "visualization")[] = ["places"];
 
 const SalonsManagement = () => {
   const { t } = useTranslation();
@@ -43,15 +46,28 @@ const SalonsManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: "AIzaSyA9u8rjoLyKyTdoTadYv-0vM0zdJQ-vpEg",
+    libraries,
+  });
+
+  const [mapCenter, setMapCenter] = useState({ lat: 25.2048, lng: 55.2708 }); // Default to Dubai
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+
   // New salon form states
   const [formData, setFormData] = useState({
     businessName: "",
     businessType: "Salon",
     city: "",
+    location: "",
     subscriptionType: "basic",
     phone: "",
     email: "",
-    admin: "" // For storing user ID of admin
+    admin: "",
+    lat: "",
+    lon: ""
   });
 
   const { data: salonsRes, isLoading: isSalonsLoading } = useAllSalonQuery({
@@ -141,6 +157,43 @@ const SalonsManagement = () => {
     }
   };
 
+  const onMapLoad = (map: google.maps.Map) => {
+    mapRef.current = map;
+  };
+
+  const onMapClick = (e: google.maps.MapMouseEvent) => {
+    if (e.latLng) {
+      const lat = e.latLng.lat();
+      const lng = e.latLng.lng();
+      setFormData((prev) => ({ ...prev, lat: lat.toString(), lon: lng.toString() }));
+    }
+  };
+
+  const onPlaceChanged = () => {
+    if (autocompleteRef.current) {
+      const place = autocompleteRef.current.getPlace();
+      if (place.geometry && place.geometry.location) {
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        const newCoords = { lat, lng };
+
+        // Pan to new location
+        if (mapRef.current) {
+          mapRef.current.panTo(newCoords);
+          mapRef.current.setZoom(15);
+        }
+
+        setMapCenter(newCoords);
+        setFormData((prev) => ({
+          ...prev,
+          lat: lat.toString(),
+          lon: lng.toString(),
+          location: place.formatted_address || prev.location,
+        }));
+      }
+    }
+  };
+
   const handleSaveSalon = async () => {
     try {
       if (!newSalonStartDate || !newSalonExpiryDate) {
@@ -153,6 +206,8 @@ const SalonsManagement = () => {
         startDate: newSalonStartDate.toISOString(),
         expiryDate: newSalonExpiryDate.toISOString(),
       };
+
+      console.log(payload)
 
       const res = await createSalon(payload).unwrap();
       if (res.success) {
@@ -415,9 +470,23 @@ const SalonsManagement = () => {
         </div>
       </div>
 
-      {/* Add New Salon Modal */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="max-w-[850px] w-[95vw] p-0 border-none bg-[#F5F5F3] overflow-hidden rounded-3xl max-h-[95vh] flex flex-col">
+        <DialogContent
+          onInteractOutside={(e) => {
+            const target = e.target as HTMLElement;
+            if (target?.closest('.pac-container')) {
+              e.preventDefault();
+            }
+          }}
+          className="max-w-[850px] w-[95vw] p-0 border-none bg-[#F5F5F3] overflow-hidden rounded-3xl max-h-[95vh] flex flex-col"
+        >
+          <style dangerouslySetInnerHTML={{
+            __html: `
+            .pac-container {
+              z-index: 9999 !important;
+              pointer-events: auto !important;
+            }
+          `}} />
           <div className="p-5 sm:p-8 space-y-8 overflow-y-auto flex-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {/* Modal Header */}
             <div className="flex items-start gap-4">
@@ -455,19 +524,74 @@ const SalonsManagement = () => {
                 </div>
               </div>
 
-              {/* Row 2 */}
-              <div className="space-y-2">
-                <Label className="text-gray-700 font-medium">{t('city_location')}</Label>
-                <div className="relative">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="text-gray-700 font-medium">{t('city')}</Label>
                   <Input
-                    placeholder="Al Qouz Fourth,Dubai,UAE"
+                    placeholder="Dubai"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="bg-[#E9E9E7] border-none h-12 rounded-xl pe-10 focus-visible:ring-0"
+                    className="bg-[#E9E9E7] border-none h-12 rounded-xl focus-visible:ring-0"
                   />
-                  <svg className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-500" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" />
-                  </svg>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-gray-700 font-medium">{t('location_address')}</Label>
+                  <div className="relative">
+                    {isLoaded ? (
+                      <Autocomplete
+                        onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+                        onPlaceChanged={onPlaceChanged}
+                      >
+                        <Input
+                          placeholder="Type address or search on map..."
+                          value={formData.location}
+                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                          className="bg-[#E9E9E7] border-none h-12 rounded-xl pe-10 focus-visible:ring-0 w-full"
+                        />
+                      </Autocomplete>
+                    ) : (
+                      <Input
+                        placeholder="Downtown Blvd"
+                        value={formData.location}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                        className="bg-[#E9E9E7] border-none h-12 rounded-xl pe-10 focus-visible:ring-0"
+                      />
+                    )}
+                    <svg className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Google Map Section */}
+              <div className="space-y-4">
+                <Label className="text-gray-700 font-medium">
+                  {t('select_location_on_map', { defaultValue: 'Select Location on Map' })}
+                </Label>
+                <div className="w-full h-[350px] rounded-2xl overflow-hidden border border-gray-200 relative">
+                  {isLoaded ? (
+                    <GoogleMap
+                      mapContainerStyle={{ width: '100%', height: '100%' }}
+                      center={formData.lat && formData.lon ? { lat: parseFloat(formData.lat), lng: parseFloat(formData.lon) } : mapCenter}
+                      zoom={13}
+                      onLoad={onMapLoad}
+                      onClick={onMapClick}
+                      options={{
+                        streetViewControl: false,
+                        mapTypeControl: false,
+                        fullscreenControl: false,
+                      }}
+                    >
+                      {formData.lat && formData.lon && (
+                        <Marker position={{ lat: parseFloat(formData.lat), lng: parseFloat(formData.lon) }} />
+                      )}
+                    </GoogleMap>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                      Loading Map...
+                    </div>
+                  )}
                 </div>
               </div>
 
