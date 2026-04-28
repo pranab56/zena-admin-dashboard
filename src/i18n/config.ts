@@ -4,6 +4,7 @@ import { initReactI18next } from 'react-i18next';
 
 import ar from './locales/ar.json';
 import en from './locales/en.json';
+import bn from './locales/bn.json';
 
 i18n
   .use(LanguageDetector)
@@ -12,6 +13,7 @@ i18n
     resources: {
       en: { translation: en },
       ar: { translation: ar },
+      bn: { translation: bn },
     },
     fallbackLng: 'en',
     interpolation: {

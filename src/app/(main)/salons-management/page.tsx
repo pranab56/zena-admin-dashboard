@@ -65,7 +65,7 @@ const SalonsManagement = () => {
     subscriptionType: "basic",
     phone: "",
     email: "",
-    admin: "",
+    password: "",
     lat: "",
     lon: ""
   });
@@ -82,7 +82,7 @@ const SalonsManagement = () => {
   interface ManagedSalon {
     _id: string;
     businessName: string;
-    salonId: string;
+    password: string;
     city: string;
     activeStatus: string;
     startDate: string;
@@ -98,7 +98,6 @@ const SalonsManagement = () => {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter((s: ManagedSalon) =>
         s.businessName?.toLowerCase().includes(searchLower) ||
-        s.salonId?.toLowerCase().includes(searchLower) ||
         s.city?.toLowerCase().includes(searchLower)
       );
     }
@@ -362,7 +361,7 @@ const SalonsManagement = () => {
                 paginatedSalons.map((salon: {
                   _id: string;
                   businessName: string;
-                  salonId: string;
+                  password: string;
                   startDate: string;
                   expiryDate: string;
                   visitor?: number;
@@ -376,7 +375,7 @@ const SalonsManagement = () => {
                     <TableRow key={i} className="group hover:bg-gray-50/50 border-b border-gray-50 transition-colors relative">
                       <TableCell className="py-5 ps-6 text-left">
                         <p className="font-semibold text-gray-800 text-[15px]">{salon.businessName}</p>
-                        <p className="text-xs text-gray-400">ID: {salon.salonId?.slice(0, 12)}...</p>
+                        <p className="text-xs text-gray-400">ID: {salon.password?.slice(0, 12)}...</p>
                       </TableCell>
                       <TableCell className="text-gray-700 font-medium text-[15px]">{format(new Date(salon.startDate), "dd-MM-yyyy")}</TableCell>
                       <TableCell className="text-gray-700 font-medium text-[15px]">{format(new Date(salon.expiryDate), "dd-MM-yyyy")}</TableCell>
@@ -696,11 +695,12 @@ const SalonsManagement = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-gray-700 font-medium text-sm">{t('admin_id', { defaultValue: 'Admin ID' })}</Label>
+                  <Label className="text-gray-700 font-medium text-sm">{t('password')}</Label>
                   <Input
-                    placeholder="69993cd09b1557e5..."
-                    value={formData.admin}
-                    onChange={(e) => setFormData({ ...formData, admin: e.target.value })}
+                    type="password"
+                    placeholder={t('password')}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="bg-[#E9E9E7] border-none h-12 rounded-xl focus-visible:ring-0"
                   />
                 </div>

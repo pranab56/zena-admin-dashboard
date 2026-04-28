@@ -94,6 +94,12 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                 >
                   {t('arabic')}
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleLanguageChange('bn')}
+                  className={`cursor-pointer rounded-lg font-medium ${i18n.language?.startsWith('bn') ? 'bg-green-50 text-green-700' : ''}`}
+                >
+                  {t('bengali')}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
