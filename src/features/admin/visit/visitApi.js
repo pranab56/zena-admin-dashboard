@@ -21,11 +21,20 @@ export const visitApi = baseApi.injectEndpoints({
       }),
     }),
 
+    confirmVisit: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `salon-reward/approve/${id}`,
+        method: "PATCH",
+        body: data
+      }),
+    }),
+
   }),
 });
 
 // Export hooks
 export const {
   useAllVisitsQuery,
-  useApproveVisitsMutation
+  useApproveVisitsMutation,
+  useConfirmVisitMutation
 } = visitApi;

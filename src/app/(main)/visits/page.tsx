@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSingleCustomerQuery } from '@/features/admin/customarApi/customarApi';
-import { useAllVisitsQuery, useApproveVisitsMutation } from '@/features/admin/visit/visitApi';
+import { useAllVisitsQuery, useApproveVisitsMutation, useConfirmVisitMutation } from '@/features/admin/visit/visitApi';
 import { baseURL } from '@/utils/BaseURL';
 import { ArrowLeft, Check } from 'lucide-react';
 import NextImage from 'next/image';
@@ -23,6 +23,8 @@ function VisitContent() {
   const router = useRouter();
   const userId = searchParams.get('userId');
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [totalBill, setTotalBill] = useState<string>('');
 
   // Fetch Customer Profile
   const { data: customerRes, isLoading: isUserLoading, refetch: refetchCustomer } = useSingleCustomerQuery(userId, { skip: !userId });
@@ -42,23 +44,35 @@ function VisitContent() {
 
   // Mutation to confirm visit
   const [approveVisit, { isLoading: isApproving }] = useApproveVisitsMutation();
+  const [confirmVisit, { isLoading: isConfirming }] = useConfirmVisitMutation();
 
   const handleConfirmVisit = async () => {
-    // if (!smartRule?._id) {
-    //   toast.error('No pending visit found to confirm');
-    //   return;
-    // }
+    if (selectedServices.length === 0) {
+      toast.error('Please select at least one service');
+      return;
+    }
+
+    if (!totalBill || isNaN(Number(totalBill))) {
+      toast.error('Please enter a valid bill amount');
+      return;
+    }
 
     try {
-      // Use a visit ID from real visits, or whatever ID is expected.
-      // Based on previous user edit, we use smartRule._id
-      const res = await approveVisit(userId).unwrap();
+      const data = {
+        services: selectedServices,
+        totalBill: parseFloat(totalBill)
+      };
+
+      const res = await confirmVisit({ id: userId, data }).unwrap();
       if (res.success) {
         toast.success(res.message || 'Visit confirmed successfully');
+        // Reset state after success
+        setSelectedServices([]);
+        setTotalBill('');
       }
       refetchCustomer();
       refetchPendingVisits();
-      refetchApprovedVisits()
+      refetchApprovedVisits();
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       toast.error(err?.data?.message || 'Failed to confirm visit');
@@ -173,6 +187,14 @@ function VisitContent() {
                   <div key={service} className="flex items-center gap-3 group cursor-pointer">
                     <Checkbox
                       id={`service-${service.toLowerCase().replace(/\s+/g, '-')}`}
+                      checked={selectedServices.includes(service)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedServices(prev => [...prev, service]);
+                        } else {
+                          setSelectedServices(prev => prev.filter(s => s !== service));
+                        }
+                      }}
                       className="w-5 h-5 rounded-md border-gray-300 data-[state=checked]:bg-[#A8D5BA] data-[state=checked]:border-[#A8D5BA]"
                     />
                     <Label
@@ -201,8 +223,10 @@ function VisitContent() {
                 <div className="relative group">
                   <Input
                     placeholder="0.00"
-                    className="py-7 ps-6 pe-12 border-gray-200 focus:border-[#A8D5BA] focus:ring-[#A8D5BA] text-xl font-bold rounded-2xl bg-gray-50/50 select-none"
-                    disabled
+                    type="number"
+                    value={totalBill}
+                    onChange={(e) => setTotalBill(e.target.value)}
+                    className="py-7 ps-6 pe-12 border-gray-200 focus:border-[#A8D5BA] focus:ring-[#A8D5BA] text-xl font-bold rounded-2xl bg-gray-50/50"
                   />
                   <span className="absolute end-6 top-1/2 transform -translate-y-1/2 text-xl font-bold text-gray-400">$</span>
                 </div>
@@ -223,10 +247,10 @@ function VisitContent() {
               <div className="pt-4">
                 <Button
                   onClick={handleConfirmVisit}
-                  disabled={isApproving || !smartRule}
+                  disabled={isConfirming || !smartRule}
                   className="w-full bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-medium text-lg py-7 rounded-2xl shadow-lg shadow-green-100 transition-all hover:translate-y-[-2px] active:translate-y-[0px]"
                 >
-                  {isApproving ? t('confirming') : t('confirm_visit_btn')}
+                  {isConfirming ? t('confirming') : t('confirm_visit_btn')}
                 </Button>
                 {!smartRule && <p className="text-xs text-red-500 mt-2 text-center">No pending visit request from this user.</p>}
               </div>

@@ -206,8 +206,6 @@ const SalonsManagement = () => {
         expiryDate: newSalonExpiryDate.toISOString(),
       };
 
-      console.log(payload)
-
       const res = await createSalon(payload).unwrap();
       if (res.success) {
         setShowAddModal(false);
@@ -220,6 +218,8 @@ const SalonsManagement = () => {
   };
 
   if (isSalonsLoading) return <Loading />;
+
+
 
   return (
     <div className="sm:px-6 lg:px-0 space-y-8 bg-white min-h-screen">
