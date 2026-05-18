@@ -17,7 +17,7 @@ const formatValue = (value: number): string | number => {
 
 const Page = () => {
   const { t } = useTranslation();
-  const { data: apiResponse, isLoading } = useCustomerQuery({});
+  const { data: apiResponse, isLoading, refetch } = useCustomerQuery({});
   const dashboardData = apiResponse?.dashBoardData;
   const customersData = apiResponse?.data || [];
 
@@ -82,7 +82,7 @@ const Page = () => {
         </div>
 
         {/* Customer Management Section */}
-        <CustomerManagement customers={customersData} />
+        <CustomerManagement customers={customersData} refetch={refetch} />
       </div>
     </div>
   );

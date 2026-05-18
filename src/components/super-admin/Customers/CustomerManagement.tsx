@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -8,6 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -18,9 +20,10 @@ import {
 import {
   useApplyRewardMutation,
   useSingleCustomerQuery,
-  useUsedRewordQuery
+  useUsedRewordQuery,
+  useCreateCustomerMutation
 } from '@/features/admin/customarApi/customarApi';
-import { ChevronLeft, ChevronRight, Eye, Footprints, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, Footprints, Star, Users } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -55,9 +58,10 @@ interface RawCustomer {
 
 interface CustomerManagementProps {
   customers?: RawCustomer[];
+  refetch?: () => void;
 }
 
-const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
+const CustomerManagement = ({ customers = [], refetch }: CustomerManagementProps) => {
   const { t } = useTranslation();
   // Map API data to Customer format
   const mappedCustomers: Customer[] = useMemo(() => {
@@ -84,6 +88,80 @@ const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'used'>('active');
   const itemsPerPage = 10;
+
+  // Create Manual User states
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createName, setCreateName] = useState('');
+  const [createPhone, setCreatePhone] = useState('');
+  const [createSelectedServices, setCreateSelectedServices] = useState<string[]>([]);
+  const [createTotalBill, setCreateTotalBill] = useState('');
+
+  const [createCustomer, { isLoading: isCreating }] = useCreateCustomerMutation();
+
+  const handleCreateCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createName.trim()) {
+      toast.error(t('name_required', { defaultValue: 'Name is required' }));
+      return;
+    }
+    if (!createPhone.trim()) {
+      toast.error(t('phone_required', { defaultValue: 'Phone number is required' }));
+      return;
+    }
+
+    // Auto format phone number with +88 prefix if needed
+    let formattedPhone = createPhone.trim();
+    if (!formattedPhone.startsWith('+')) {
+      if (formattedPhone.startsWith('880')) {
+        formattedPhone = '+' + formattedPhone;
+      } else if (formattedPhone.startsWith('01')) {
+        formattedPhone = '+88' + formattedPhone;
+      } else if (formattedPhone.startsWith('1') && formattedPhone.length === 10) {
+        formattedPhone = '+880' + formattedPhone;
+      }
+    }
+
+    try {
+      const payload: any = {
+        name: createName.trim(),
+        phoneNumber: formattedPhone,
+      };
+
+      if (createSelectedServices.length > 0) {
+        payload.services = createSelectedServices;
+      }
+
+      if (createTotalBill.trim()) {
+        const bill = parseFloat(createTotalBill);
+        if (isNaN(bill)) {
+          toast.error(t('invalid_bill', { defaultValue: 'Please enter a valid bill amount' }));
+          return;
+        }
+        payload.totalBill = bill;
+      }
+
+      const res = await createCustomer(payload).unwrap();
+      if (res.success) {
+        toast.success(res.message || t('customer_created_success', { defaultValue: 'Customer created successfully' }));
+        // Reset states
+        setCreateName('');
+        setCreatePhone('');
+        setCreateSelectedServices([]);
+        setCreateTotalBill('');
+        setIsCreateModalOpen(false);
+        // Refetch parent list
+        if (refetch) {
+          refetch();
+        }
+      } else {
+        toast.error(res.message || t('create_failed', { defaultValue: 'Failed to create customer' }));
+      }
+    } catch (error: any) {
+      console.error(error);
+      const errorMessage = error?.data?.message || error?.message || t('create_failed', { defaultValue: 'Failed to create customer' });
+      toast.error(errorMessage);
+    }
+  };
 
   // Single Customer Query
   const { data: singleCustomerResponse, isLoading: isSingleLoading, refetch: singleCustomerRefetch } = useSingleCustomerQuery(selectedCustomerId, {
@@ -144,9 +222,20 @@ const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
     <div className="">
       <div className="">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-2">{t('customer_management')}</h1>
-          <p className="text-gray-600 text-sm md:text-base">{t('customer_management_desc')}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-2">{t('customer_management')}</h1>
+            <p className="text-gray-600 text-sm md:text-base">{t('customer_management_desc')}</p>
+          </div>
+          <div>
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-[#A8D5BA] hover:bg-[#97C4A9] px-8 text-gray-800 font-medium py-6 rounded-xl border-none shadow-sm flex items-center gap-2 transition-all hover:translate-y-[-1px]"
+            >
+              <Users className="w-5 h-5" />
+              {t('create_user', { defaultValue: 'Create User' })}
+            </Button>
+          </div>
         </div>
 
         {/* Search and Filter */}
@@ -194,7 +283,7 @@ const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
 
               {/* Table Body */}
               <div className="divide-y divide-gray-100">
-                {paginatedCustomers.map((customer) => (
+                {paginatedCustomers.reverse().map((customer) => (
                   <div
                     key={customer.id}
                     className="grid grid-cols-7 gap-4 p-4 items-center hover:bg-gray-50/50 transition-colors"
@@ -272,7 +361,7 @@ const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
                           size="sm"
                           onClick={() => setCurrentPage(pageNum)}
                           className={`w-10 h-10 rounded-xl transition-all ${currentPage === pageNum
-                            ? 'bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-bold border-none shadow-md shadow-green-50'
+                            ? 'bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-medium border-none shadow-md shadow-green-50'
                             : 'text-gray-500 hover:bg-gray-50 border-gray-200'
                             }`}
                         >
@@ -294,7 +383,7 @@ const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
                   size="sm"
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages || totalPages === 0}
-                  className="gap-1 rounded-xl bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 border-none font-bold px-4 h-10 shadow-md shadow-green-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none transition-all"
+                  className="gap-1 rounded-xl bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 border-none font-medium px-4 h-10 shadow-md shadow-green-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:shadow-none transition-all"
                 >
                   {t('next')}
                   <ChevronRight className="h-4 w-4" />
@@ -493,6 +582,149 @@ const CustomerManagement = ({ customers = [] }: CustomerManagementProps) => {
               <div className="p-10 text-center text-gray-400">Customer not found</div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Manual Customer Modal */}
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent className="max-w-2xl p-0 gap-0 max-h-[96vh] flex flex-col overflow-hidden border-none shadow-2xl rounded-3xl bg-white">
+          <DialogHeader className="p-6 pb-4 shrink-0 bg-white border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-[#EEF8ED] rounded-xl text-[#2F6B43]">
+                <Users className="w-6 h-6" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-medium text-gray-950">
+                  {t('create_manual_user', { defaultValue: 'Create Manual User' })}
+                </DialogTitle>
+                <p className="text-xs text-gray-500 mt-1">
+                  Add a new offline or walk-in customer with their details.
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateCustomer} className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+
+              {/* Name & Phone Number Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label htmlFor="create-name" className="text-sm font-semibold text-gray-700">
+                    {t('name', { defaultValue: 'Name' })} <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="create-name"
+                    placeholder={t('enter_name_placeholder', { defaultValue: 'e.g. Lokman Hakim' })}
+                    value={createName}
+                    onChange={(e) => setCreateName(e.target.value)}
+                    required
+                    className="h-11 border-gray-200 focus-visible:ring-[#A8D5BA] rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="create-phone" className="text-sm font-semibold text-gray-700">
+                    {t('phone_number', { defaultValue: 'Phone Number' })} <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="create-phone"
+                    placeholder={t('enter_phone_placeholder', { defaultValue: 'e.g. +88017XXXXXXXX' })}
+                    value={createPhone}
+                    onChange={(e) => setCreatePhone(e.target.value)}
+                    required
+                    className="h-11 border-gray-200 focus-visible:ring-[#A8D5BA] rounded-xl"
+                  />
+                </div>
+              </div>
+
+              {/* Services Used Grid */}
+              <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100/80 space-y-4">
+                <div>
+                  <h4 className="text-base font-semibold text-gray-800">
+                    {t('services_used', { defaultValue: 'Services Used' })}
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Selecting services helps you create smarter offers and increase profits.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 pt-2">
+                  {[
+                    'Haircut',
+                    'Hair Color / Treatment',
+                    'Facial Treatment',
+                    'Manicure',
+                    'Waxing (Body / Face)',
+                    'Pedicure',
+                    'Nail Art',
+                    'Eyelash Extensions',
+                    'Eyebrow Threading / Shaping',
+                  ].map((service) => (
+                    <div key={service} className="flex items-center gap-3 group cursor-pointer">
+                      <Checkbox
+                        id={`create-service-${service.toLowerCase().replace(/\s+/g, '-')}`}
+                        checked={createSelectedServices.includes(service)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setCreateSelectedServices(prev => [...prev, service]);
+                          } else {
+                            setCreateSelectedServices(prev => prev.filter(s => s !== service));
+                          }
+                        }}
+                        className="w-5 h-5 rounded-md border-gray-300 data-[state=checked]:bg-[#A8D5BA] data-[state=checked]:border-[#A8D5BA] transition-colors focus-visible:ring-[#A8D5BA]"
+                      />
+                      <Label
+                        htmlFor={`create-service-${service.toLowerCase().replace(/\s+/g, '-')}`}
+                        className="text-[14px] font-medium text-gray-600 group-hover:text-gray-900 transition-colors cursor-pointer select-none"
+                      >
+                        {service}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Total Bill Field */}
+              <div className="space-y-2">
+                <Label htmlFor="create-bill" className="text-sm font-semibold text-gray-700">
+                  {t('total_bill_amount', { defaultValue: 'Total Bill Amount' })} <span className="text-xs text-gray-400 font-normal">({t('optional', { defaultValue: 'Optional' })})</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="create-bill"
+                    placeholder="0.00"
+                    type="number"
+                    value={createTotalBill}
+                    onChange={(e) => setCreateTotalBill(e.target.value)}
+                    className="h-11 ps-6 pe-12 border-gray-200 focus-visible:ring-[#A8D5BA] rounded-xl"
+                  />
+                  <span className="absolute end-4 top-1/2 transform -translate-y-1/2 text-sm font-medium text-gray-400">$</span>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer Actions */}
+            <div className="p-6 border-t border-gray-100 flex items-center justify-end gap-3 bg-gray-50/50 shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsCreateModalOpen(false)}
+                disabled={isCreating}
+                className="rounded-xl px-5 h-11 border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                {t('cancel', { defaultValue: 'Cancel' })}
+              </Button>
+              <Button
+                type="submit"
+                disabled={isCreating}
+                className="bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-medium px-6 h-11 rounded-xl border-none shadow-md shadow-green-50 transition-all hover:translate-y-[-1px] disabled:opacity-50 flex items-center gap-2"
+              >
+                {isCreating ? t('creating', { defaultValue: 'Creating...' }) : t('create_user', { defaultValue: 'Create User' })}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

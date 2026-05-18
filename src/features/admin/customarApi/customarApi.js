@@ -10,6 +10,15 @@ export const customarApi = baseApi.injectEndpoints({
       }),
     }),
 
+    createCustomer: builder.mutation({
+      query: (data) => ({
+        url: "/customer/create",
+        method: "POST",
+        body: data
+      }),
+    }),
+
+
     applyReward: builder.mutation({
       query: (id) => ({
         url: `/customer/approved-reward/${id}`,
@@ -41,5 +50,6 @@ export const {
   useCustomerQuery,
   useApplyRewardMutation,
   useSingleCustomerQuery,
+  useCreateCustomerMutation,
   useUsedRewordQuery,
 } = customarApi;
