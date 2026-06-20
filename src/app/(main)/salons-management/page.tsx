@@ -27,13 +27,13 @@ import {
 } from "@/components/ui/table";
 import { useAllSalonQuery, useCreateSalonMutation, useSalonCardQuery } from "@/features/super_admin/salon/salonApi";
 import { cn } from "@/lib/utils";
+import { Autocomplete, GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { differenceInDays, format, isBefore } from "date-fns";
 import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
-import { GoogleMap, Marker, Autocomplete, useJsApiLoader } from "@react-google-maps/api";
+import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useTranslation } from 'react-i18next';
-import Link from "next/link";
 
 const libraries: ("places" | "drawing" | "geometry" | "visualization")[] = ["places"];
 
@@ -48,7 +48,7 @@ const SalonsManagement = () => {
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyA9u8rjoLyKyTdoTadYv-0vM0zdJQ-vpEg",
+    googleMapsApiKey: "AIzaSyApF_j3S_70p5uDk1YYkkOCQCgV3amTPMU",
     libraries,
   });
 
