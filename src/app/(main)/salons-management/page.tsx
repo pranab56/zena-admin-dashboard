@@ -29,7 +29,7 @@ import { useAllSalonQuery, useCreateSalonMutation, useSalonCardQuery } from "@/f
 import { cn } from "@/lib/utils";
 import { Autocomplete, GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { differenceInDays, format, isBefore } from "date-fns";
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -77,7 +77,7 @@ const SalonsManagement = () => {
   const { data: cardRes } = useSalonCardQuery(undefined);
   const cardData = cardRes?.data || {};
 
-  const [createSalon] = useCreateSalonMutation();
+  const [createSalon, { isLoading: isCreating }] = useCreateSalonMutation();
 
   interface ManagedSalon {
     _id: string;
@@ -728,10 +728,16 @@ const SalonsManagement = () => {
                   {t('cancel')}
                 </Button>
                 <Button
-                  className="w-full sm:w-auto bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-medium px-8 py-3 h-auto rounded-xl shadow-none order-1 sm:order-2"
+                  className="w-full sm:w-auto bg-[#A8D5BA] hover:bg-[#97C4A9] text-gray-800 font-medium px-8 py-3 h-auto rounded-xl shadow-none order-1 sm:order-2 disabled:opacity-70"
                   onClick={handleSaveSalon}
+                  disabled={isCreating}
                 >
-                  {t('save_salon')}
+                  {isCreating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin me-2" />
+                      {t('saving', { defaultValue: 'Saving...' })}
+                    </>
+                  ) : t('save_salon')}
                 </Button>
               </div>
             </div>

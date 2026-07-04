@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useSingleCustomerQuery } from '@/features/admin/customarApi/customarApi';
-import { useAllVisitsQuery, useApproveVisitsMutation, useConfirmVisitMutation } from '@/features/admin/visit/visitApi';
+import { useAllVisitsQuery, useConfirmVisitMutation } from '@/features/admin/visit/visitApi';
 import { baseURL } from '@/utils/BaseURL';
 import { ArrowLeft, Check } from 'lucide-react';
 import NextImage from 'next/image';
@@ -43,7 +43,6 @@ function VisitContent() {
   const approvedVisits = approvedVisitsRes?.data?.data || [];
 
   // Mutation to confirm visit
-  const [approveVisit, { isLoading: isApproving }] = useApproveVisitsMutation();
   const [confirmVisit, { isLoading: isConfirming }] = useConfirmVisitMutation();
 
   const handleConfirmVisit = async () => {

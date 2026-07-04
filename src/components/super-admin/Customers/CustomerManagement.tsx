@@ -19,9 +19,9 @@ import {
 } from '@/components/ui/select';
 import {
   useApplyRewardMutation,
+  useCreateCustomerMutation,
   useSingleCustomerQuery,
-  useUsedRewordQuery,
-  useCreateCustomerMutation
+  useUsedRewordQuery
 } from '@/features/admin/customarApi/customarApi';
 import { ChevronLeft, ChevronRight, Eye, Footprints, Star, Users } from 'lucide-react';
 import Image from 'next/image';
@@ -38,13 +38,27 @@ interface Customer {
   phone: string;
   points: number;
   visits: number;
-  referrals: number;
-  status: 'Active' | 'Inactive';
-  joinedDate: string;
-  currentBalance: number;
-  referredBy: string;
-  referredByImage: string;
-  avatar: string;
+  referrals?: number;
+  status?: 'Active' | 'Inactive';
+  joinedDate?: string;
+  currentBalance?: number;
+  referredBy?: string;
+  referredByImage?: string;
+  avatar?: string;
+}
+
+interface CustomerCreatePayload {
+  name: string;
+  phoneNumber: string;
+  services?: string[];
+  totalBill?: number;
+  referrals?: number;
+  status?: 'Active' | 'Inactive';
+  joinedDate?: string;
+  currentBalance?: number;
+  referredBy?: string;
+  referredByImage?: string;
+  avatar?: string;
 }
 
 interface RawCustomer {
@@ -122,7 +136,7 @@ const CustomerManagement = ({ customers = [], refetch }: CustomerManagementProps
     }
 
     try {
-      const payload: any = {
+      const payload: CustomerCreatePayload = {
         name: createName.trim(),
         phoneNumber: formattedPhone,
       };
@@ -156,9 +170,10 @@ const CustomerManagement = ({ customers = [], refetch }: CustomerManagementProps
       } else {
         toast.error(res.message || t('create_failed', { defaultValue: 'Failed to create customer' }));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      const errorMessage = error?.data?.message || error?.message || t('create_failed', { defaultValue: 'Failed to create customer' });
+      const err = error as { data?: { message?: string }; message?: string };
+      const errorMessage = err?.data?.message || err?.message || t('create_failed', { defaultValue: 'Failed to create customer' });
       toast.error(errorMessage);
     }
   };

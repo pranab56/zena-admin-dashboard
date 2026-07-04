@@ -41,11 +41,11 @@ const Dashboard = () => {
 
   // Metrics Mapping
   const metrics = [
-    { title: t('total_salons'), value: stats.totalSalon || 0, bg: "bg-[#E3ECE4]" },
-    { title: t('visits_today'), value: stats.visitToday || 0, bg: "bg-[#E9E3C1]" },
-    { title: t('avg_visit_frequency'), value: stats.avgVisit || 0, bg: "bg-[#F3A5A0]" },
-    { title: t('total_users'), value: stats.totalUser || 0, bg: "bg-[#EFD1C9]" },
-    { title: t('points_issued'), value: stats.pointIssued || 0, bg: "bg-[#E0E0E0]" },
+    { title: t('total_salons'), value: stats.totalSalon?.toFixed(2) || 0, bg: "bg-[#E3ECE4]" },
+    { title: t('visits_today'), value: stats.visitToday?.toFixed(2) || 0, bg: "bg-[#E9E3C1]" },
+    { title: t('avg_visit_frequency'), value: stats.avgVisit?.toFixed(2) || 0, bg: "bg-[#F3A5A0]" },
+    { title: t('total_users'), value: stats.totalUser?.toFixed(2) || 0, bg: "bg-[#EFD1C9]" },
+    { title: t('points_issued'), value: stats.pointIssued?.toFixed(2) || 0, bg: "bg-[#E0E0E0]" },
   ];
 
   interface MonthlyTrend {

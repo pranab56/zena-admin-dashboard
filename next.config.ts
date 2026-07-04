@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "api.zenaapp.net",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "api.zenaapp.netimage",
         pathname: "/**",
       },

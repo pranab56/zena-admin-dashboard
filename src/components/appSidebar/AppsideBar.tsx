@@ -84,11 +84,13 @@ const ZenaSidebar = ({ isCollapsed, onToggle, isMobileOpen, onCloseMobile }: Zen
     { name: t('dashboard'), path: "/", icon: LayoutDashboard, allowedRoles: ['salonadmin', 'ADMIN'] },
     { name: t('customers'), path: "/customers", icon: Users, allowedRoles: ['salonadmin', 'ADMIN'], activeOnPaths: ["/visits"] },
     // { name: t('visits'), path: "/visits", icon: FileText, allowedRoles: ['salonadmin', 'ADMIN'] },
+
     { name: t('rewards_management'), path: "/rewards-management", icon: Gift, allowedRoles: ['salonadmin', 'ADMIN'] },
     { name: t('redemption_requests'), path: "/redemption-requests", icon: CreditCard, allowedRoles: ['salonadmin', 'ADMIN'] },
     { name: t('settings'), path: "/settings/super-admin", icon: Settings, allowedRoles: ['salonadmin', 'ADMIN'] },
     { name: t('overview'), path: "/overview", icon: Grid3x3, allowedRoles: ['superadmin', 'SUPER_ADMIN'] },
     { name: t('salons_management'), path: "/salons-management", icon: Scissors, allowedRoles: ['superadmin', 'SUPER_ADMIN'] },
+    { name: t('rule_management'), path: "/rule-management", icon: Scissors, allowedRoles: ['superadmin', 'SUPER_ADMIN'] },
     { name: t('analytics'), path: "/analytics", icon: ChartNoAxesColumnIncreasing, allowedRoles: ['superadmin', 'SUPER_ADMIN'] },
     {
       name: t('settings'),
