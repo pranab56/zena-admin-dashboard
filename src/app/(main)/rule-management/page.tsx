@@ -37,7 +37,6 @@ const getApiErrorMessage = (error: unknown): string => {
       return (errObj.error as Record<string, unknown>).message as string;
     }
   }
-
   return "Something went wrong.";
 };
 

@@ -110,6 +110,18 @@ const CustomerManagement = ({ customers = [], refetch }: CustomerManagementProps
   const [createSelectedServices, setCreateSelectedServices] = useState<string[]>([]);
   const [createTotalBill, setCreateTotalBill] = useState('');
 
+  const normalizeSaudiPhoneInput = (value: string) => {
+    let digits = value.replace(/\D/g, '');
+    if (digits.startsWith('00971')) {
+      digits = digits.slice(5);
+    } else if (digits.startsWith('971')) {
+      digits = digits.slice(3);
+    } else if (digits.startsWith('0')) {
+      digits = digits.slice(1);
+    }
+    return digits.slice(0, 9);
+  };
+
   const [createCustomer, { isLoading: isCreating }] = useCreateCustomerMutation();
 
   const handleCreateCustomer = async (e: React.FormEvent) => {
@@ -123,17 +135,7 @@ const CustomerManagement = ({ customers = [], refetch }: CustomerManagementProps
       return;
     }
 
-    // Auto format phone number with +88 prefix if needed
-    let formattedPhone = createPhone.trim();
-    if (!formattedPhone.startsWith('+')) {
-      if (formattedPhone.startsWith('880')) {
-        formattedPhone = '+' + formattedPhone;
-      } else if (formattedPhone.startsWith('01')) {
-        formattedPhone = '+88' + formattedPhone;
-      } else if (formattedPhone.startsWith('1') && formattedPhone.length === 10) {
-        formattedPhone = '+880' + formattedPhone;
-      }
-    }
+    const formattedPhone = `+971${normalizeSaudiPhoneInput(createPhone)}`;
 
     try {
       const payload: CustomerCreatePayload = {
@@ -644,10 +646,12 @@ const CustomerManagement = ({ customers = [], refetch }: CustomerManagementProps
                   </Label>
                   <Input
                     id="create-phone"
-                    placeholder={t('enter_phone_placeholder', { defaultValue: 'e.g. +88017XXXXXXXX' })}
-                    value={createPhone}
-                    onChange={(e) => setCreatePhone(e.target.value)}
+                    placeholder={t('enter_phone_placeholder', { defaultValue: '+971-5XXXXXXXX' })}
+                    value={`+971-${createPhone}`}
+                    onChange={(e) => setCreatePhone(normalizeSaudiPhoneInput(e.target.value))}
                     required
+                    maxLength={14}
+                    inputMode="numeric"
                     className="h-11 border-gray-200 focus-visible:ring-[#A8D5BA] rounded-xl"
                   />
                 </div>

@@ -70,6 +70,18 @@ const SalonsManagement = () => {
     lon: ""
   });
 
+  const normalizeSaudiPhoneInput = (value: string) => {
+    let digits = value.replace(/\D/g, '');
+    if (digits.startsWith('00971')) {
+      digits = digits.slice(5);
+    } else if (digits.startsWith('971')) {
+      digits = digits.slice(3);
+    } else if (digits.startsWith('0')) {
+      digits = digits.slice(1);
+    }
+    return digits.slice(0, 9);
+  };
+
   const { data: salonsRes, isLoading: isSalonsLoading } = useAllSalonQuery({
     limit: 1000 // Fetching a large number to support front-end filtering
   });
@@ -202,6 +214,7 @@ const SalonsManagement = () => {
 
       const payload = {
         ...formData,
+        phone: `+971${normalizeSaudiPhoneInput(formData.phone)}`,
         startDate: newSalonStartDate.toISOString(),
         expiryDate: newSalonExpiryDate.toISOString(),
       };
@@ -678,9 +691,11 @@ const SalonsManagement = () => {
                   <div className="space-y-2">
                     <Label className="text-gray-700 font-medium text-sm">{t('phone')}</Label>
                     <Input
-                      placeholder="+1 (555) 000 0000"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="+971-5XXXXXXXX"
+                      value={`+971-${formData.phone}`}
+                      onChange={(e) => setFormData({ ...formData, phone: normalizeSaudiPhoneInput(e.target.value) })}
+                      maxLength={14}
+                      inputMode="numeric"
                       className="bg-[#E9E9E7] border-none h-12 rounded-xl focus-visible:ring-0"
                     />
                   </div>
